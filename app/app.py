@@ -7,6 +7,7 @@ st.set_page_config(
 
 pages = [
     st.Page("pages/page_one.py", title="World Bank Data", icon=":material/show_chart:"),
+    st.Page("pages/bar_chart.py", title="World Bank Bar Chart", icon=":material/bar_chart:"),
     st.Page("pages/page_two.py", title="Page Two", icon=":material/filter_2:"),
     st.Page(
         "pages/raw_data_columns.py",
