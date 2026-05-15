@@ -1,0 +1,106 @@
+{
+  "downloaded_at_utc": "2026-05-15T12:03:22.111043+00:00",
+  "source": "World Bank Indicators API",
+  "source_docs_url": "https://datahelpdesk.worldbank.org/knowledgebase/articles/889392-about-the-indicators-api-documentation",
+  "api_base_url": "https://api.worldbank.org/v2",
+  "date_range": "1960:2024",
+  "indicators": [
+    {
+      "code": "NY.GDP.MKTP.CD",
+      "slug": "gdp_current_usd",
+      "label": "GDP (current US$)"
+    },
+    {
+      "code": "NY.GDP.MKTP.KD.ZG",
+      "slug": "gdp_growth_annual_pct",
+      "label": "GDP growth (annual %)"
+    },
+    {
+      "code": "NY.GDP.PCAP.CD",
+      "slug": "gdp_per_capita_current_usd",
+      "label": "GDP per capita (current US$)"
+    },
+    {
+      "code": "SH.DYN.MORT",
+      "slug": "under5_mortality_per_1000",
+      "label": "Mortality rate, under-5 (per 1,000 live births)"
+    },
+    {
+      "code": "SP.DYN.LE00.IN",
+      "slug": "life_expectancy_years",
+      "label": "Life expectancy at birth, total (years)"
+    },
+    {
+      "code": "SP.POP.TOTL",
+      "slug": "population_total",
+      "label": "Population, total"
+    }
+  ],
+  "rows": {
+    "long": 103740,
+    "wide": 17290,
+    "countries": 296
+  },
+  "api_metadata_by_indicator": {
+    "NY.GDP.MKTP.CD": [
+      {
+        "page": 1,
+        "pages": 1,
+        "per_page": 20000,
+        "total": 17290,
+        "sourceid": "2",
+        "lastupdated": "2026-04-08"
+      }
+    ],
+    "NY.GDP.MKTP.KD.ZG": [
+      {
+        "page": 1,
+        "pages": 1,
+        "per_page": 20000,
+        "total": 17290,
+        "sourceid": "2",
+        "lastupdated": "2026-04-08"
+      }
+    ],
+    "NY.GDP.PCAP.CD": [
+      {
+        "page": 1,
+        "pages": 1,
+        "per_page": 20000,
+        "total": 17290,
+        "sourceid": "2",
+        "lastupdated": "2026-04-08"
+      }
+    ],
+    "SH.DYN.MORT": [
+      {
+        "page": 1,
+        "pages": 1,
+        "per_page": 20000,
+        "total": 17290,
+        "sourceid": "2",
+        "lastupdated": "2026-04-08"
+      }
+    ],
+    "SP.DYN.LE00.IN": [
+      {
+        "page": 1,
+        "pages": 1,
+        "per_page": 20000,
+        "total": 17290,
+        "sourceid": "2",
+        "lastupdated": "2026-04-08"
+      }
+    ],
+    "SP.POP.TOTL": [
+      {
+        "page": 1,
+        "pages": 1,
+        "per_page": 20000,
+        "total": 17290,
+        "sourceid": "2",
+        "lastupdated": "2026-04-08"
+      }
+    ]
+  }
+}

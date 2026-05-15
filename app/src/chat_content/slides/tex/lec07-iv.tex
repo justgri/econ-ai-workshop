@@ -1,0 +1,942 @@
+%\input{../slideHeader}
+
+\title{Instrumental Variables}
+\author{Paul Schrimpf}
+\institute{UBC \\ Economics 326} 
+\date{\today}
+
+
+\providecommand{\bols}{{\hat{\beta}^{\mathrm{OLS}}}}
+\providecommand{\biv}{{\hat{\beta}^{\mathrm{IV}}}}
+\providecommand{\btsls}{{\hat{\beta}^{\mathrm{2SLS}}}}
+
+\graphicspath{{figures/}}
+
+\begin{document}
+
+\frame{\titlepage}
+%\setcounter{tocdepth}{2}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}
+  \tableofcontents  
+\end{frame}
+
+\begin{frame}
+  \frametitle{References}
+  \begin{itemize}
+  \item \cite{w2013} chapter 15
+  \item \cite{ap2009} chapter 4
+  \item \cite{ap2014} chapters 3, 6
+  \item \cite{ak2001}
+  \item \cite{murray2006}
+  \end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+
+\section{Introduction}
+
+\begin{frame}[allowframebreaks]\frametitle{Introduction}
+  \begin{itemize}
+  \item In the linear regression model,
+    \[ y_i = \beta_0 + \beta_1 x_i + \epsilon_i \]
+    the most important assumption for $\bols_1$ to be consistent is
+    exogeneity, 
+    \[ \Er[ x_i \epsilon_i ] = 0 \] 
+  \item Exogeneity is often an implausible assumption
+  \item If we have an additional variable $z_i$ with certain
+    properties than we can still consistently estimate $\beta_1$ even
+    when $\Er[x_i \epsilon_i] \neq 0$
+  \item New notation: $\bols$ instead of just $\hat{\beta}$ for OLS
+    estimates 
+  \end{itemize}
+\end{frame}
+
+To decide whether or not exogeneity is plausible, we must first be
+clear about what model we are trying to estimate. If we are simply
+interested in the population regression of $y$ on $x$, then exogeneity
+automatically holds and OLS is consistent. However, much of the time
+we not interested in a population regression. Instead, we want to get
+at the causal relationship between or $y$ and $x$ or we want the
+linear model to represent some economic model (like a demand function
+of production function). In those cases, exogeneity is a strong and
+often implausible assumption. 
+
+As an example, we will investigate the causal effect of education on
+wages. 
+
+\section{Example: return to education}
+\begin{frame}[allowframebreaks]\frametitle{Example: return to education}
+  \begin{itemize}
+  \item Education ($s_i$) and log wages ($\log w_i$) 
+    \[ \log w_i = \beta_0 + \beta_1 s_i + \epsilon_i \]
+  \item Suppose we want the causal effect of education on wages --
+    then we want to hold constant everything else that affects wages 
+  \item We can never hold everything else constant, but we know that 
+    \[ \plim \bols_1 = \beta_1 +
+    \frac{\cov(s_i,\epsilon_i)}{\var(s_i) } \]
+    so as long as whatever we are not holding constant
+    (i.e. $\epsilon_i$) is uncorrelated with $s_i$ we are okay
+  \item But it is very likely that there is unobserved ability,
+    $a_i$, (IQ,  work ethic, etc) that affects both education and wages
+    \[ \log w_i = \beta_0 + \beta_1 s_i  + \underbrace{\beta_2 a_i
+      + u_i}_{=\epsilon_i} \]
+  \item Then, 
+    \[ \plim \bols_1 = \beta_1 + \beta_2 \frac{\cov (s_i,
+      a_i)}{\var(s_i)} + \frac{\cov(s_i,u_i)}{\var(s_i)} \]      
+  \end{itemize}
+\end{frame}
+
+\begin{frame} \frametitle{OLS estimates of return to education}
+  \begin{itemize}
+  \item Data from two papers: 
+    \begin{itemize}
+    \item \cite{angrist1991}: 1970 \& 1980 U.S. census data 5\%
+      public use sample, men age 30-50
+    \item \cite{card1993}: NLS young men 1966 cohort (wages measured
+      in 1976 when age 24-34)
+    \end{itemize}
+  \item We will start by looking at the OLS estimates even though we
+    know that they are not consistent estimates of the causal effect
+    of education on wages
+  \end{itemize}
+\end{frame}
+
+\begin{frame} 
+  \frametitle{OLS estimates of return to education}  
+  \input{educ-ols} 
+  \footnotetext{\href{https://bitbucket.org/paulschrimpf/econ326/src/master/notes/07/educWage.R?at=master} 
+    {Code}}
+\end{frame}
+
+\begin{frame}[allowframebreaks]
+  \frametitle{IV estimates of return to education}
+  \[ \log w_i = \beta_0 + \beta_1 s_i + \epsilon_i \]
+  \begin{itemize}
+  \item Suppose we observe a variable $z_i$ such that $\Er[z_i
+    \epsilon_i] = 0$, then 
+    \begin{align}
+      0 = & \Er[z_i \epsilon] \notag \\
+      = & \Er\left[z_i \left(\log w_i - \beta_0 - \beta_1 s_i \right)
+      \right]  \label{pop1}
+    \end{align}
+    we also know $\Er[\epsilon_i] = 0$, so
+    \begin{align} 
+      0 = \Er\left[ \left(\log w_i - \beta_0 - \beta_1 s_i \right)
+      \right]  \label{pop2}
+    \end{align}
+    replace the $\Er[]$ with $\avg$ and we have two equations to
+    estimate two parameters $\beta_0$, $\beta_1$
+    \begin{align}
+      0 = & \avg z_i \left(\log w_i - \biv_0 - \biv_1 s_i
+      \right) \label{s1} \\
+      0 = & \avg \left(\log w_i - \biv_0 - \biv_1 s_i \right) \label{s2}
+    \end{align}
+    \begin{itemize}
+    \item Note similarity to OLS first order conditions 
+    \item This approach to estimation --- start with an assumption
+      about some expectations (moments) being zero and use them to derive an
+      equation to use for estimation --- is called the (generalized)
+      method of moments
+    \item (\ref{pop1}) and (\ref{pop2}) are called the (population)
+      moment conditions
+    \item (\ref{s1}) and (\ref{s2}) are called the sample (or
+      empirical) moment conditions 
+    \end{itemize}
+  \item $z_i$ is called an \alert{instrumental variable}
+  \item The solution to (\ref{s1}) and (\ref{s2}) is
+    \begin{align*}
+      \biv_1 = \frac{ \avg (z_i - \bar{z}) \log w_i } { \avg (z_i -
+        \bar{z}) s_i } \text{ and } \biv_0 = \overline{\log w} -
+      \biv_1 \bar{s}
+    \end{align*}
+    they are called \alert{instrumental variables (IV) estimators}     
+  \item Is $\biv_1$ consistent?
+    \begin{align*} 
+      \plim \biv_1 = & \plim  \frac{ \avg (z_i - \bar{z}) \log w_i } { \avg (z_i -
+        \bar{z}) s_i }  \\
+      = & \frac{\plim  \avg (z_i - \bar{z}) \log w_i } {\plim  \avg (z_i -
+        \bar{z}) s_i } \\
+      = &  \frac{\cov(z,\log w)}{\cov(z,s)} \text{ (assuming
+        $\cov(z,s) \neq 0$)} \\
+      = & \frac{\cov(z, \beta_0 + \beta_1 s + \epsilon)} {\cov(z,s)}
+      \\
+      = & \frac{\cov(z, \beta_0) + \cov(z,\beta_1 s) +
+        \cov(z,\epsilon)} {\cov(z,s)} \\
+      = & \beta_1
+    \end{align*}
+    yes, as long as $\cov(z,s) \neq 0$ (and $\cov(z,\epsilon) = 0$,
+    which we already assumed)
+  \item How can we find such a $z$?
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[allowframebreaks]
+  \frametitle{\cite{card1993} instrument: nearby college}
+  \begin{itemize}
+  \item $nearc4_i = 1$ if $i$ grew up in a county with a four-year
+    college, else 0
+  \item Two requirements to be a valid instrument:
+    \begin{enumerate}
+    \item (exogenous) $\Er[nearc4_i \epsilon_i] = 0$
+    \item (relevant) $\cov(nearc4_i, s_i) \neq 0$
+    \end{enumerate}
+  \item Relevance can be checked empirically
+    \begin{itemize}
+    \item $\widehat{\cov}(nearc4_i,s_i) = 0.18$
+    \item Regress $s_i$ on $nearc4_i$
+      \begin{center}
+        \input{educ-cardFirstStage}
+      \end{center}
+    \end{itemize}
+  \item Exogeneity cannot be tested empirically
+    \begin{itemize}
+    \item \cite{card1993} discusses why maybe not $\Er[ nearc4_i
+      \epsilon_i ] = 0$
+      \begin{itemize}
+      \item Families that value education might live near colleges
+      \item High schools and elementary schools might be higher
+        quality near colleges
+      \item It's a challenge to show these concerns are not a problem
+        (we will discuss it more later)
+      \end{itemize}
+    \end{itemize}
+  \end{itemize}  
+\end{frame}
+
+\begin{frame}[allowframebreaks]
+  \frametitle{\cite{card1993} IV estimate}
+  \input{educ-cardIV} 
+  \footnotetext{\href{https://bitbucket.org/paulschrimpf/econ326/src/master/notes/07/educWage.R?at=master} 
+    {Code}}
+\end{frame}
+
+\begin{frame}[shrink]
+  \frametitle{\cite{angrist1991} instrument: quarter of birth}
+  \begin{itemize}
+  \item In most of the U.S.\ must attend school until age 16 (at least
+    during 1938-1967)
+  \item Age when starting school depends on birthday, so grade when
+    can legally drop out depends on birthday
+  \item Plausible that quarter of birth uncorrelated with other
+    factors affecting wages (there is some disagreement about this
+    though) 
+  \item Is quarter of birth correlated with education?
+    \begin{center}
+      \input{educ-akFirstStage}
+    \end{center}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{\cite{angrist1991} instrument: quarter of birth -
+    relevance}
+  \includegraphics[keepaspectratio=true,height=0.7\textheight]
+  {ak-fig1}
+\end{frame}
+
+\begin{frame}
+  \frametitle{\cite{angrist1991} instrument: quarter of birth -
+    relevance}
+  \includegraphics[keepaspectratio=true,height=0.7\textheight]
+  {ak-fig2}
+\end{frame}
+
+\begin{frame}
+  \frametitle{\cite{angrist1991} instrument: quarter of birth -
+    relevance}
+  \includegraphics[keepaspectratio=true,height=0.7\textheight]
+  {ak-fig3}
+\end{frame}
+
+\begin{frame}
+  \includegraphics[keepaspectratio=true,width=\textwidth]{ak-firstStage}
+\end{frame}
+
+\begin{frame}
+  \frametitle{\cite{angrist1991} reduced form}
+  \includegraphics[keepaspectratio=true,width=\textwidth]
+  {ak-reducedForm}
+\end{frame}
+
+\begin{frame}[allowframebreaks]
+  \frametitle{\cite{angrist1991} OLS estimate}
+  {\small{
+  \input{educ-akOLS} 
+  }}
+  \footnotetext{\href{https://bitbucket.org/paulschrimpf/econ326/src/master/notes/07/educWage.R?at=master} 
+    {Code}}
+\end{frame}
+
+\begin{frame}[allowframebreaks]
+  \frametitle{\cite{angrist1991} IV estimate}
+  {\small{
+      \input{educ-akIV} 
+    }}
+  \footnotetext{\href{https://bitbucket.org/paulschrimpf/econ326/src/master/notes/07/educWage.R?at=master} 
+    {Code}}
+\end{frame}
+
+\begin{frame} 
+  \frametitle{Issues raised}
+  \begin{itemize}
+  \item Statistical properties of $\biv$
+    \begin{itemize}
+    \item Unbiased? Consistent? Asymptotic distribution? Standard
+      error?
+    \end{itemize}
+  \item How to use instrumental variables in multiple regression 
+  \item Why are \cite{angrist1991} and \cite{card1993} results so
+    different?
+  \item What happens if IV assumptions not true? Assumptions that
+    might be wrong: 
+    \begin{itemize}
+    \item $\Er[z_i \epsilon_i] = 0$
+    \item $\cov(z,s) \neq 0$
+    \item Linear model
+    \end{itemize}
+  \item See \cite{card2003} for a review of many papers about the
+    returns to education
+  \end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Statistical properties}
+
+\begin{frame}[allowframebreaks] 
+  \frametitle{Statistical properties}
+  \begin{itemize}
+  \item Model
+    \begin{equation}
+      y_i = \beta_0 + \beta_1 x_i + \epsilon_i \label{lin}
+    \end{equation}
+  \item Assumptions:
+    \begin{itemize}
+    \item[IV.1] Linearity: (\ref{lin}) holds
+    \item[IV.2] Independent observations
+    \item[IV.3] Relevance (rank condition): $\cov(z,x) \neq 0$
+    \item[IV.4] Exogeneity: $\Er[z_i \epsilon_i ] = 0$
+    \end{itemize}
+    Note: these are the same as for OLS except the rank condition and
+    exogeneity assumptions are now about the instrument, $z$, instead of
+    the regressor, $x$
+  \item Relevance $+$ exogeneity $=$ $z$ affects $y$ only through $x$
+  \item Terminology:
+    \begin{itemize}
+    \item $z_i$ is an \alert{instrument} or \alert{instrumental
+        variable}
+    \item (\ref{lin}) is the \alert{structural equation}
+    \item $x_i$ is an \alert{endogenous regressor}
+    \item The regression of $x$ on $z$ is the \alert{first stage} 
+    \item The regression of $y$ on $z$ is the \alert{reduced form}
+    \end{itemize}
+  \item Properties to look at:
+    \begin{itemize}
+    \item Bias
+    \item Consistency
+    \item Asymptotic distribution
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\subsection{Bias}
+\begin{frame}[allowframebreaks]\frametitle{IV is biased}
+  \begin{itemize}
+  \item Consider $\Er[\biv_1]$
+    \begin{align*}
+      \Er[\biv_1] = & \Er\left[ \frac{\sumin (z_i - \bar{z}) y_i}
+        {\sumin (z_i - \bar{z})x_i } \right] \\
+      = & \Er\left[ \frac{\sumin (z_i - \bar{z}) (\beta_0 + \beta_1
+          x_i + \epsilon_i)}
+        {\sumin (z_i - \bar{z})x_i }\right] \\ 
+      = & \beta_1 + \Er\left[\frac{\sumin (z_i - \bar{z})\epsilon_i}
+        {\sumin (z_i - \bar{z})x_i } \right] \\
+      \neq & \beta_1
+    \end{align*}
+  \item Cannot show $\Er\left[\frac{\sumin (z_i - \bar{z})\epsilon_i} 
+      {\sumin (z_i - \bar{z})x_i } \right] = 0$ because of $x_i$ in
+    denominator and  
+    \[ \Er\left[\frac{\sumin (z_i - \bar{z})\epsilon_i}
+      {\sumin (z_i - \bar{z})x_i } \right]  \neq
+    \frac{\Er\left[\sumin (z_i - \bar{z})\epsilon_i \right]}
+    {\Er\left[ \sumin (z_i - \bar{z})x_i \right] } \]
+  \end{itemize}
+\end{frame}
+
+\subsection{Consistency}
+
+Showing consistency and asymptotic normality of IV uses almost the exact
+same steps as we used for OLS. For OLS, we had
+\[ \hat{\beta}_1^{OLS} = \beta_1 + \frac{\sumin (x_i -
+    \bar{x})\epsilon_i}{\sumin (x_i - \bar{x})^2} \]
+and for IV we have a similar expression,
+\[ \hat{\beta}_1^{IV} = \beta_1 + \frac{\sumin (z_i -
+    \bar{z})\epsilon_i}{\sumin (z_i - \bar{z})x_i}. \]
+In fact IV with $z=x$ is OLS. In either case consistency and
+asymptotic normality will involve working with the sum of stuff
+times $\epsilon_i$.
+
+\begin{frame}[allowframebreaks]\frametitle{IV is consistent}
+  \begin{itemize}
+  \item As in the education example,
+    \begin{align*}
+      \plim \biv_1 = & \plim  \frac{ \avg (z_i - \bar{z}) y_i } { \avg (z_i -
+        \bar{z}) x_i }  \\
+      = & \beta_1 + \plim \frac{ \avg (z_i - \bar{z}) \epsilon_i } 
+      { \avg (z_i -\bar{z}) x_i } \\
+      = & \beta_1 + \frac{ \plim \avg z_i \epsilon_i - \plim \bar{z}
+        \plim \bar{\epsilon} } { \plim \avg z_i x_i - \plim \bar{z}
+        \plim \bar{x} } \\
+      = & \beta_1 + \frac{ \Er[z \epsilon]}{\Er[ z x] -
+        \Er[z] \Er[x]} = \beta_1 + \frac{\cov(z,\epsilon)}{\cov(z,x)}
+      \\
+      = & \beta_1 
+    \end{align*}
+  \item So IV is biased but consistent
+  \item Another useful way of expressing $\biv_1$ is as the reduced
+    form divided by the first stage:
+    \begin{itemize}
+    \item Reduced form:
+      \[ y_i = \pi_{y,0} + \pi_{y,1} z_i + u_i \]  
+      OLS estimate $ = \hat{\pi}_{y,1} =
+      \frac{\widehat{\cov}(z,y)}{\widehat{\var}(z)}$
+    \item First stage:
+      \[ x_i = \pi_{x,0} + \pi_{x,1} z_i + v_i \]
+      OLS estimate $ = \hat{\pi}_{x,1} =
+      \frac{\widehat{\cov}(x,z)}{\widehat{\var}(z)}$
+    \item Then,
+      \[ \biv = \frac{\widehat{\cov}(z,y)}{\widehat{\cov}(z,x)} = 
+      \frac{\widehat{\cov}(z,y)/\widehat{\var}(z)}{\widehat{\cov}(z,x)/\widehat{\var}(z)}
+      =  \frac{\hat{\pi}_{y,1}}{\hat{\pi}_{x,1}} \]
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\subsection{Asymptotic distribution}
+
+\begin{frame}[allowframebreaks]
+  \frametitle{Asymptotic distribution}
+  \begin{itemize}
+  \item We will allow for heteroskedasticity
+  \item As when looking at bias and consistency of $\biv$, 
+    \[ \biv_1 = \beta_1 + \frac{ \avg (z_i - \bar{z}) \epsilon_i } 
+    { \avg (z_i -\bar{z}) x_i } \]
+  \item To apply CLT we look at $\sqrt{n}(\biv_1 - \beta_1)$,
+    \begin{align*}
+      \sqrt{n}(\biv_1 - \beta_1) = &  \sqrt{n} \frac{ \avg (z_i - \bar{z}) \epsilon_i } 
+      { \avg (z_i -\bar{z}) x_i } 
+    \end{align*}
+  \item As for OLS with heteroskedasticity, 
+    \[ \sqrt{n} \avg (z_i - \bar{z}) \epsilon_i \indist N\left(0,
+      \Er\left[(z - \Er[z])^2 \epsilon^2 \right] \right) \]
+  \item Previous slide showed 
+    \[ \plim \avg (z_i -\bar{z}) x_i   = \cov(x,z) \]
+  \item So using Slutsky's theorem, we can conclude
+    \[ \sqrt{n}(\biv_1 - \beta_1)  \indist N \left( 0,
+      \frac{\Er\left[(z - \Er[z])^2 \epsilon^2 \right]} {\cov(x,z)^2}
+    \right) \]
+  \item We can estimate the asymptotic variance by $\frac{ \avg(z_i -
+      \bar{z})^2 \epsilon_i^2} {\left( \avg (z_i - \bar{z})
+        x_i \right)^2} $
+  \item $t$-statistic
+    \[ t = \frac{\biv_1 - \beta_1}{\sqrt{ 
+        \frac{ \avg(z_i - \bar{z})^2 \hat{\epsilon}_i^2} {n \left(
+            \avg (z_i - \bar{z}) x_i \right)^2}}} \indist N(0,1) \] 
+  \item Standard error:
+    \[ s.e.(\biv_1) = \sqrt{ 
+        \frac{ \avg(z_i - \bar{z})^2 \hat{\epsilon}_i^2} 
+        {n \left( \avg (z_i - \bar{z}) x_i \right)^2}} \]
+  \end{itemize}
+\end{frame}
+
+\subsection{IV when exogeneity fails}
+
+\begin{frame}[allowframebreaks]\frametitle{IV without exogeneity}
+  \begin{itemize}
+  \item People sometimes defend an instrument by saying: ``even though
+    it might not be true that $\Er[z \epsilon]=0$, it is likely that
+    the correlation between $z$ and $\epsilon$ is smaller than the
+    correlation between $x$ and $\epsilon$. Therefore we prefer the IV
+    estimate to the OLS estimate.'' \\
+    Is this argument correct?
+    \pause
+  \item We showed earlier that 
+    \[ \plim \biv_1 = \beta_1 + \frac{ \Er[z \epsilon]}{\cov(z,x)} \] 
+    IV is consistent only when $\Er[z \epsilon] = 0$
+  \item We also showed that 
+    \[ \plim \bols_1 = \beta_1 + \frac{\Er[x \epsilon]}{\var(x)} \]
+    \pause
+  \item Express in terms of correlations:\footnote{Let
+      $\rho_{x,y}$ denote the correlation of $x$ and $y$, and note
+      that $\rho_{x,y} = \cov(x,y) / \sqrt{\var(x)\var(y)}$. } 
+    \[ \plim \biv_1 - \beta_1 = \frac{ \rho_{z,\epsilon}
+      \sqrt{\var(z)\var(\epsilon)}} {\rho_{z,x} \sqrt{\var(z)\var(x)}}
+    = \frac{\rho_{z,\epsilon}}{\rho_{z,x}}
+    \sqrt{\frac{\var(\epsilon)}{\var(x)}} \]
+    and 
+    \[ \plim \bols_1 - \beta_1 = \frac{ \rho_{x,\epsilon}
+      \sqrt{\var(x)\var(\epsilon)}} {\var(x)}
+    = \rho_{x,\epsilon} \sqrt{\frac{\var(\epsilon)}{\var(x)}} \]
+  \item So IV is ``less inconsistent'' than OLS only if
+    \[ \abs{\frac{\rho_{z,\epsilon}}{\rho_{z,x}}} <
+    \abs{\rho_{x,\epsilon}} \]
+    \begin{itemize}
+    \item Just $z$ being ``less endogenous'' or less correlated with
+      $\epsilon$ is not enough
+    \end{itemize}
+  \item No, the proposed argument is not correct
+  \end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{IV for multiple regression}
+\begin{frame}[allowframebreaks]\frametitle{IV for multiple regression}
+  \begin{itemize}
+  \item Model
+    \begin{equation}
+      y_i = \beta_0 + \beta_1 x_{1,i} + \cdots + \beta_k x_{k,i} +
+      \beta_{k+1} w_{1,i} + \cdots + \beta_{k+r} w_{r,i} + \epsilon_i \label{mlin}
+    \end{equation}
+    with instruments $z_{1,i}, ..., z_{m,i}$
+  \item Assumptions:    
+    \begin{itemize}
+    \item[IV.1] Linearity: (\ref{mlin}) holds
+    \item[IV.2] Independent observations
+    \item[IV.3] Relevance (rank condition): $m \geq k$ and (loosely
+      speaking) each $x_{j,i}$ is correlated with some $z_{l,i}$
+    \item[IV.4] Exogeneity: $\Er[w_{s,i} \epsilon_i] = 0$ for
+      $s=1,..,r$ and $\Er[z_{l,i} \epsilon_i ] = 0$ for $l=1,...,m$
+    \end{itemize}
+  \item Terminology:
+    \begin{itemize}
+    \item $w_{s,i}$ are exogenous controls
+    \item $x_{j,i}$ are endogenous regressors
+    \item $z_{l,i}$ are instruments
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+\begin{frame}[allowframebreaks]\frametitle{IV for multiple regression}
+  \begin{itemize}
+  \item Example: returns to education:
+    \[ \log w_i = \beta_0 + \beta_1 s_i + \beta_2 \mathrm{age}_i +
+    \beta_3 \mathrm{age}_i^2 + \beta_4 \mathrm{region}_i +
+    \epsilon_i \]
+    \begin{itemize}
+    \item $s_i$ is endogenous
+    \item $\mathrm{age}_i$, $\mathrm{age}_i^2$, and
+      $\mathrm{region}_i$ are exogenous
+    \end{itemize}
+  \item How to estimate $\beta$?
+    \pause
+    \begin{itemize}
+    \item As before, could find a consistent estimator by using the
+      assumed moment conditions
+      {\scriptsize{
+          \hspace*{-10cm}  
+          \begin{align*}
+            0 = & \Er[\epsilon] &= &\Er\left[ ( y - \beta_0 - \beta_1 x_{1} - \cdots - \beta_k x_{k} -
+              \beta_{k-1} w_{1} - \cdots - \beta_{k+r} w_{r} ) \right] \\
+            0 = & \Er[w\epsilon] &=& \Er\left[w( y - \beta_0 - \beta_1 x_{1} - \cdots - \beta_k x_{k} -
+              \beta_{k-1} w_{1} - \cdots - \beta_{k+r} w_{r} ) \right] \\
+            0 = & \Er[z\epsilon] &= &\Er\left[z( y - \beta_0 - \beta_1 x_{1} - \cdots - \beta_k x_{k} -
+              \beta_{k-1} w_{1} - \cdots - \beta_{k+r} w_{r} ) \right] 
+          \end{align*}
+        }}
+      but easier to describe in a different way - two stage least squares
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+In multiple regression, the idea behind IV is the same --- take the
+assumed exogeneity consumptions and use them to get some equations to
+solve for the unknown $\beta_j$. With a single $x$ and $z$, writing
+the explicit solution to this system of equations was easy. With
+multiple $x$'s and $z$'s (and the added $w$'s), the solution is
+complicated to write down (but easy for a computer to calculate). 
+One useful way of expressing the solution to this system is two stage
+least squares.
+
+\begin{frame}[allowframebreaks]\frametitle{Two stage least squares}
+  \begin{itemize}
+  \item \alert{Two stage least squares}: $\btsls$
+    \begin{enumerate}
+    \item Estimate (by OLS) the first stage
+      {\footnotesize
+      \begin{align*}
+        \hat{x}_{j,i} = \hat{\pi}_{x_j,0} + \hat{\pi}_{x_j,z_1} z_{1,i} +
+        \cdots + \hat{\pi}_{x_j,z_m} z_{m,i} + \hat{\pi}_{x_j,w_1} w_{1,i} +
+        \cdots + \hat{\pi}_{x_j,w_r} w_{r,i}
+      \end{align*}}
+      to get predicted values $\hat{x}_j$
+    \item Regress (using OLS) $y$ on $\hat{x}_1, ..., \hat{x}_k, w_1, ..., w_r$
+      the coefficients are $\btsls_j$
+    \end{enumerate}
+  \item Exercise: show that for bivariate regression $\biv_1 = \btsls_1$
+  \end{itemize}
+\end{frame}
+
+To understand why two stage least squares works, it's useful to think
+about how the second stage, regressing $y$ on $\hat{x}$ (and $w$) compares to
+just the OLS regression of $y$ on $x$. The OLS regression of $y$ on
+$x$ is not consistent because we think $x$ might be correlated with
+$\epsilon$. $\hat{x}$ is the part of $x$ that can be explained by
+$z$. We assume that $z$ is uncorrelated with $\epsilon$, so $\hat{x}$
+is part of $x$ that is uncorrelated with $\epsilon$. 
+
+Here we will show that $\biv_1 = \btsls_1$, where $\biv_1 =
+\frac{\sumin (z_i - \bar{z}) y_i}{\sumin (z_i - \bar{z}) x_i}$ and
+$\btsls_1$ is defined as on the previous slide. The second stage of
+two-stage least squares is the OLS regression of $y$ on $\hat{x}$, so
+\[ \btsls_1 = \frac{ \sumin (\hat{x}_i - \bar{\hat{x}}) y_i} {\sumin
+    (\hat{x}_i - \bar{\hat{x}})^2 }. \] 
+Recall that one of properties of OLS fitted values is that the
+covariance of the fitted value and actual value is equal to the
+variance of the fitted value. We showed this earlier in the
+course. Using that on the denominator here, we have
+\begin{align*}
+\btsls_1 = & \frac{ \sumin (\hat{x}_i - \bar{\hat{x}}) y_i} {\sumin
+             (\hat{x}_i - \bar{\hat{x}})x_i }  
+\end{align*}
+Using the fact that $\hat{x}_i = \hat{\pi}_0 + \hat{\pi}_1 z_i$ where
+$\hat{\pi}_0$ and $\hat{\pi}_1$ are OLS estimates, we have
+\begin{align*}
+\btsls_1 = & \frac{ \sumin (\hat{\pi}_0 + \hat{\pi}_1 z_i -
+             \overline{\hat{\pi}_0 + \hat{\pi}_1 z}) y_i} 
+             {\sumin (\hat{\pi}_0 + \hat{\pi}_1 z_i -
+             \overline{\hat{\pi}_0 + \hat{\pi}_1 z})x_i } \\
+  = & \frac{ \hat{\pi}_1 \sumin (z_i - \bar{z})y_i}
+      {\hat{\pi}_1 \sumin (z_i -\bar{z})x_i } \\
+  = & \frac{\sumin (z_i - \bar{z}) y_i}{\sumin (z_i - \bar{z}) x_i} =
+      \biv_1. 
+\end{align*}
+
+
+\begin{frame}[allowframebreaks]\frametitle{Two stage least squares}
+  \begin{itemize}
+  \item $\btsls$ is consistent and asymptotically normal
+  \item Essential that $x$ be regressed on both $z$ and $w$ in the
+    first stage
+  \item When calculating $\btsls$ best not to preform two
+    regressions 
+    \begin{itemize}
+    \item OLS standard errors of second stage regression are not
+      correct for $\btsls$
+    \item In R use {\texttt{ivreg}} or {\texttt{felm}}
+    \end{itemize}
+  \item Test relevance condition: look at the
+    $F$-statistic in for $H_0: \pi_{x_j,z_1} = \cdots = \pi_{x_j,z_m}
+    = 0$ in the first stage
+    \begin{itemize}
+    \item Rule of thumb: $F \geq 10$ is okay, $F < 10$ need to use
+      another method (weak instruments)       
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+The logic for this rule of thumb is a bit different than what we have
+seen. It comes from thinking about a different sort of asymptotic
+approximation, called weak instruments asymptotics, than what we have
+been using. See \cite{stockWrightYogo2002} for more information.
+
+
+\begin{frame}[allowframebreaks]\frametitle{Understanding 2SLS} 
+  \begin{itemize}
+  \item In bivariate regression $\biv_1 = \btsls_1$
+  \item With one endogenous variable and one instrument, ($k=m=1$), 
+    \[ \btsls_1 = \frac{\hat{\pi}_{y,z_1}} {\hat{\pi}_{x_1,z_1}} =
+    \frac{\text{reduced form coefficient on instrument}}
+    {\text{first stage coefficient on instrument}}\]
+    \begin{itemize}
+    \item First stage:
+      {\footnotesize{
+      \begin{align*}
+        {x}_{j,i} = & {\pi}_{x_j,0} + {\pi}_{x_j,z_1} z_{1,i} +
+        \cdots + {\pi}_{x_j,z_m} z_{m,i} + \\ & +{\pi}_{x_j,w_1} w_{1,i} +
+        \cdots + {\pi}_{x_j,w_r} w_{r,i}  + v_{j,i}
+      \end{align*}
+      }}
+    \item Reduced form: 
+      {\footnotesize{
+      \begin{align*}
+        y_i = {\pi}_{y,0} + {\pi}_{y,z_1} z_{1,i} +
+        \cdots + {\pi}_{y,z_m} z_{m,i} + {\pi}_{y,w_1} w_{1,i} +
+        \cdots + {\pi}_{y,w_r} w_{r,i}  + u_i
+      \end{align*}
+    }}
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[allowframebreaks]\frametitle{Understanding 2SLS} 
+  \begin{itemize}
+  \item Control function interpretation:
+    \begin{itemize}
+    \item 2SLS is equivalent to the following:
+      \begin{enumerate}
+      \item Regress $x_j$ on $z$ and $w$, calculate the
+        \emph{residuals}, $\hat{v}_{j,i}$
+      \item Regress $y$ on $x$, $w$ \emph{and} $\hat{v}_{j,i}$
+        estimated coefficient on $x_j$ is equal to $\btsls_j$
+      \end{enumerate}
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+Two stage least squares and this control function procedure give
+exactly the same estimate. If $\hat{x}$ is the part of $x$ that is
+uncorrelated with $\epsilon$, then the remaining $\hat{v}$ is part of
+$x$ that is correlated with $\epsilon$. If we can control (i.e. hold
+constant) this ``bad'' part of $x$, then we can consistently estimate
+the coefficient on $x$. Multiple regression does exactly what we
+want. The regression of $y$ on $x$, $w$, and $\hat{v}$ estimates the
+relationship between $y$ and $x$, holding $w$ and $\hat{v}$ constant. 
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+
+\section{Example: return to education}
+
+\begin{frame}[allowframebreaks]
+  \frametitle{Example: return to education (continued)}
+    \[ \log w_i = \beta_0 + \beta_1 s_i + \epsilon_i \]
+
+  \begin{itemize}
+  \item \cite{card1993} and \cite{angrist1991} estimates very different   
+  \end{itemize}
+  \begin{center}
+    \begin{tabular}{l|cc}  & {\textbf{Card}} &
+      {\textbf{AK}} \\
+      \hline
+      Sample & NLS66 & Census 1970 \& 1980 \\
+      Instrument & $nearc4$ & $QOB$ \\
+      $\bols_1$ & 0.052 & 0.071 \\
+      $\biv_1$ & 0.188 & 0.099 \\ \hline
+    \end{tabular}
+  \end{center}
+  \begin{itemize}
+  \item Why?
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[allowframebreaks]
+  \frametitle{Adding controls}
+  \begin{itemize}
+  \item Card's sample features younger men than Angrist and Krueger's
+  \item Use multiple regression to control for age
+  \end{itemize}
+\end{frame}
+
+\begin{frame}\frametitle{OLS controlling for age}
+  \input{educAge-ols} 
+  \footnotetext{\href{https://bitbucket.org/paulschrimpf/econ326/src/master/notes/07/educWage.R?at=master} 
+    {Code}}
+\end{frame}
+
+\begin{frame}\frametitle{IV controlling for age}
+  \input{educAge-iv}
+  \footnotetext{\href{https://bitbucket.org/paulschrimpf/econ326/src/master/notes/07/educWage.R?at=master}
+    {Code}}
+\end{frame}
+
+\begin{frame}\frametitle{Controlling for urban}
+  \begin{itemize}
+  \item Card instrument $=$ being in same county as a college
+  \item Colleges are more common in urban areas
+  \item Wages are also higher in urban areas
+  \item Should control for urban (and any other available geographic
+    variables)    
+  \end{itemize}
+\end{frame}
+
+\begin{frame}\frametitle{IV controlling for age and urban}
+  {\footnotesize{\input{educAgeUrban-iv}}}
+  \footnotetext{\href{https://bitbucket.org/paulschrimpf/econ326/src/master/notes/07/educWage.R?at=master} 
+    {Code}}
+\end{frame}
+
+\begin{frame}[shrink]\frametitle{Using multiple instruments}
+  \begin{itemize}
+  \item Quarter of birth $=1,2,3,4$
+  \item If assume $\Er[\epsilon_i | QOB_i] = 0$, then can use quarter
+    of birth dummies as instruments
+    $z_i = (qob^1_i,qob^2_i,qob^3_i)$ where $qob^q_i = 1$ if $QOB_i =
+    q$, else $0$
+  \item Since relationship between quarter of birth and education
+    seems to change with year of birth, can use $QOB \times YOB$
+    dummies as instruments 
+    \begin{itemize}
+    \item $d_i^{q,y} = 1$ if $QOB_i = q$ and $YOB_i = y$
+    \item $3 \times 9 = 27$ dummies for 1930-1939 cohort
+    \end{itemize}    
+  \item In our linear model $\plim \btsls$ is the same whether we use
+    $QOB$ or dummies as instrument; in a richer model it can matter 
+  \end{itemize}
+\end{frame}
+
+\begin{frame}\frametitle{AK estimates with dummy instruments}
+  {\footnotesize{\input{educDum-iv}}}
+  \footnotetext{\href{https://bitbucket.org/paulschrimpf/econ326/src/master/notes/07/educWage.R?at=master} 
+    {Code}}  
+\end{frame}
+
+\subsection{\cite{lemieux2001}}
+\begin{frame}
+  \frametitle{\cite{lemieux2001} ``Education, earnings, and the
+    ‘Canadian G.I. Bill’ ''}
+  \begin{itemize}
+  \item Question: what is the causal effect of education on earnings? 
+  \item Strategy: use VRA as instrument for education
+  \item Veteran Rehabilitation Act (1944)
+    \begin{itemize}
+    \item Tuition $+$ living expenses allowance of \$60 ($\approx
+      \$500$ today) per month for university or vocational training 
+    \item Different impact in Ontario and Quebec
+    \item Ontario had compulsory schooling until age 16, more
+      universities, higher average education at start of WWII
+    \item Quebec had no compulsory schooling, few universities,
+      lower average education at start of WWII; lower portion of veterans
+    \item VRA had smaller impact in Quebec than Ontario        
+    \end{itemize}
+  \item Instrument $=$ Ontario $\times$ university age in 1945
+  \item Data: 1971 Census
+    \begin{itemize}
+    \item Observations: 11,163 Ontario $+$ 10,078 Quebec
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}\frametitle{}
+  \includegraphics[keepaspectratio=true,width=\textwidth]{cl1}
+\end{frame}
+
+\begin{frame}\frametitle{First stage }
+  \includegraphics[keepaspectratio=true,width=\textwidth]{cl-firstStage}
+\end{frame}
+
+\begin{frame}\frametitle{Reduced form}
+  \includegraphics[keepaspectratio=true,width=\textwidth]{cl-reducedForm}
+\end{frame}
+
+\begin{frame} 
+  \frametitle{Model}
+  \begin{align*}
+    y_i = & s_i \beta + \gamma_0 + \gamma_1 exper_i + \gamma_2 exper_i^2 +
+    \gamma_3 exper_i^3 + \gamma_4 exper_i^4 + \\  & 
+    +  \gamma_5 Quebec_i + \gamma_6 weeks_i + \gamma_7 fulltime_i + \epsilon_i
+  \end{align*}
+  \begin{itemize}
+  \item $y_i = $ log annual earnings in 1970
+  \item $weeks_i = $ weeks worked in 1970
+  \item $fulltime_i = 1 $ if full-time worker in 1970
+  \item $exper_i =$ potential experience $ = age -
+    education - 6$ 
+  \item Some specifications add interactions between $Quebec$ and
+    $exper_i$ 
+    \begin{itemize}
+    \item I.e.\ add $\gamma_8 exper_i \times Quebec_i + \gamma_9 exper_i^2
+      \times Quebec_i + \cdots$ 
+    \item Results on next slide include interactions
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame} \frametitle{Results: education coefficient}
+  \begin{tabular}{lc}
+    \emph{Model} & \emph{Coefficient} \\
+    \hline 
+    OLS & 0.070 \\
+    & (0.002) \\
+    \hline 
+    Using $z=$ Ontario $\times$ age 18-21 in 1945 & \\
+    First stage & 0.465 \\
+    & (0.101) \\
+    Reduced form &  0.073 \\
+    & (0.023) \\
+    IV & 0.157 \\
+    & (0.051) \\
+    \hline 
+    IV using Ontario $\times$ age 18-24 in 1945 & 0.080 \\
+    & (0.044) \\
+    \hline 
+    IV for women using Ontario $\times$ age 18-24 in 1945 & -0.111 \\
+    & (0.524) 
+  \end{tabular}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{\cite{fang2012}}
+
+\begin{frame}\frametitle{\cite{fang2012} ``The Returns to Education in
+    China: Evidence from the 1986 Compulsory Education Law''}
+  \begin{itemize}
+  \item Question: what is the causal effect of education on earnings
+    in China?    
+  \item Strategy: use China Compulsory Education Law of 1986 as
+    instrument
+  \item China Compulsory Education Law of 1986 
+    \begin{itemize}
+    \item 9 years of education compulsory
+    \item Education begins at age 6
+    \item National law, but variation across provinces in date of
+      implementation and strength of enforcement
+    \item Ages 15+ at implementation date unaffected            
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame} \frametitle{\cite{fang2012}}
+  \begin{itemize}
+  \item Structural model:
+    \[ \log(earnings)_i = \beta_0 + \beta_1 s_i + \text{ other
+        controls } + \epsilon_i \]
+  \item First stage:
+    \[ S_i = \alpha_0 + \alpha_1 IV_i +  + \text{ other
+        controls } + u_i \]
+  \item Instrument:
+    \[ IV_i = \begin{cases} 1 & \text{ if age}_i < 15 \text{ on law's
+        effective date} \\
+      0 & \text{ otherwise}
+    \end{cases} \]
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[plain]
+  \includegraphics[width=\textwidth, height=\textheight,
+  keepaspectratio=true]{fang-tab1}
+\end{frame}
+
+\begin{frame}[plain]
+  \includegraphics[width=\textwidth, height=\textheight,
+  keepaspectratio=true]{fang-tab2}
+\end{frame}
+
+\begin{frame}[plain]
+  \includegraphics[width=\textwidth, height=\textheight,
+  keepaspectratio=true]{fang-tab3}
+\end{frame}
+
+\begin{frame}[plain]
+  \includegraphics[width=\textwidth, height=\textheight,
+  keepaspectratio=true]{fang-tab4}
+\end{frame}
+
+\begin{frame}[plain]
+  \includegraphics[width=\textwidth, height=\textheight,
+  keepaspectratio=true]{fang-tab5}
+\end{frame}
+
+\begin{frame}[plain]
+  \includegraphics[width=\textwidth, height=\textheight,
+  keepaspectratio=true]{fang-tab6}
+\end{frame}
+
+\begin{frame}[allowframebreaks]
+  \frametitle{References}
+\bibliographystyle{jpe}
+\bibliography{../326}
+\end{frame}
+  
+
+\end{document}
+
+

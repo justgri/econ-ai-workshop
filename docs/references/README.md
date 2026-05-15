@@ -6,3 +6,4 @@ Also available upon request at: https://aieconomist.io/guides/codex-for-economis
 
 # Skills 
 Streamlit: https://github.com/streamlit/agent-skills
+Demo chatbot: https://demo-ai-assistant.streamlit.app/

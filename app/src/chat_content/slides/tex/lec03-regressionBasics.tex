@@ -1,0 +1,1480 @@
+\title{Introduction to regression}
+\author{Paul Schrimpf}
+\institute{UBC \\ Economics 326}
+\date{\today}
+
+\begin{document}
+
+\frame{\titlepage}
+%\setcounter{tocdepth}{2}
+
+\begin{frame}[shrink]
+  \frametitle{Review of last week}
+  \begin{itemize}
+  \item Expectations and conditional expectations    
+    \begin{itemize}
+    \item Linear
+    \item Iterated expectations
+    \end{itemize}
+  \item Asymptotics --- using large sample distribution to approximate
+    finite sample distribution of estimators
+    \begin{itemize}
+    \item LLN: sample moments converge in probability to population moments, 
+      \[ \underbrace{\frac{1}{n} \sum_{i=1}^n g(x_i)}_{\text{sample
+          moment}} \inprob \underbrace{\Er[g(x)]}_{\text{population
+          moment}} \]
+    \item CLT: centered and scaled sample moments converge in
+      distribution to population moments
+      \[ \underbrace{\sqrt{n}}_{\text{``scaling''}} \left( \frac{1}{n}
+        \sum_{i=1}^n g(x_i) \underbrace{-
+          \Er[g(x)}_{\text{``centering''}}] \right) \indist N\left(0,
+        \var(g(x))\right) \]
+    \item Using CLT to calculate p-values
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\part{Definition and interpretation of regression}
+\frame{\partpage}
+
+\begin{frame}
+  \tableofcontents  
+\end{frame}
+
+\begin{frame}
+  \frametitle{References}
+  \begin{itemize}
+  \item Main texts:
+    \begin{itemize}
+    \item \cite{ap2014} chapter 2
+    \item \cite{w2013} chapter 2    
+    \item \cite{sw2009} chapter 4-5
+    \end{itemize}
+    % \item These slides draw heavily from \cite{angrist2009}, which is
+    %   unfortunately not published
+  \item More advanced:
+    \begin{itemize}
+    \item \cite{ap2009} chapter 3 up to and including section 3.1.2
+      (pages 27-40)
+    \item \cite{bierens2010sreg}            
+    \item \cite{abbring2001} chapter 3
+    \item \cite{baltagi2002} chapter 3
+    \item \cite{linton2017} chapters 16-20, 22
+    \end{itemize}
+  \item More introductory:
+    \begin{itemize}
+    \item \cite{dbc2012} chapter 7
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+The most important things to understand are contained in
+\cite{ap2014}. The most useful references for details are \cite{w2013} or
+\cite{sw2009}.  \cite{ap2009} is also very nice, but a bit more
+dense. \cite{dbc2012} is a simple introduction to regression with many
+examples and not much math. PDFs of \cite{linton2017} and
+\cite{baltagi2002} are available from UBC library. They are more
+technical and difficult than Wooldridge, but I think would still be
+useful.  \cite{bierens2010sreg} has many of the proofs that we will go
+through, but the typesetting is not great.  \cite{abbring2001} moves
+quickly and uses matrix notation. If you have not taken linear algebra
+or you are not comfortable with matrix multiplication and inversion
+(which you do not need to know and will not be covered in this
+course), then \cite{abbring2001} may not be useful for you.
+
+\section{Motivation}
+
+\begin{frame}
+  \frametitle{General problem}
+  \begin{itemize}
+  \item Often interested in relationship between two (or more)
+    variables, e.g.\
+    \begin{itemize}
+    \item Wages and education
+    \item Minimum wage and unemployment
+    \item Price, quantity, and product characterics
+    \end{itemize}
+  \item Usually have:
+    \begin{enumerate}
+    \item Variable to be explained (\alert{dependent variable})
+    \item \alert{Explanatory variable(s)} or \alert{independent
+        variables} or \alert{covariates} 
+    \end{enumerate}
+    \begin{tabular}{c c} {\textbf{Dependent}} & {\textbf{Independent}}
+      \\
+      Wage & Education \\
+      Unemployment & Minimum wage \\
+      Quantity & Price  and product characteristics \\
+      $Y$ & $X$ 
+    \end{tabular}
+  \item For now agnostic about causality, but $\Er[Y|X]$ usually is
+    not causal
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Example: Growth and GDP}
+
+  \includegraphics[width=\figwidth,height=\figheight]{growGDP-scatter}
+     
+\end{frame}
+
+\begin{frame}\frametitle{Years of schooling in 1960 and growth}
+
+  \includegraphics[width=\figwidth,height=\figheight]{growSchool-scatter}   
+
+\end{frame}
+
+
+\section{Conditional expectation function}
+
+\begin{frame}[allowframebreaks]
+  \frametitle{Conditional expectation function}
+  \begin{itemize}
+  \item One way to describe relation between two variables is a
+    function, 
+    \[ Y = h(X) \]
+  \item Most relationships in data are not deterministic, so look at
+    average relationship,
+    \begin{align*}
+      Y = & \underbrace{\Er[Y|X]}_{\equiv h(X)} + \underbrace{\left(Y
+          - \Er[Y|X]\right)}_{\equiv \epsilon}  \\  
+      = & \Er[Y|X] + \epsilon
+    \end{align*}
+  \item Note that $\Er[\epsilon] = 0$ (by definition of $\epsilon$ and
+    iterated expectations)
+  \item $\Er[Y|X]$ can be any function, in particular, it need not be
+    linear
+  \item Unrestricted $\Er[Y|X]$ hard to work with
+    \begin{itemize} 
+    \item Hard to estimate
+    \item Hard to communicate if $X$ a vector (cannot draw graphs) 
+    \end{itemize}
+  \item Instead use linear regression
+    \begin{itemize}
+    \item Easier to estimate and communicate
+    \item Tight connection to $\Er[Y|X]$
+    \end{itemize}
+  \end{itemize}
+\end{frame}  
+
+\section{Population regression} 
+\begin{frame}[allowframebreaks]\frametitle{Population regression}
+  \begin{itemize}
+  \item The bivariate \alert{population regression} of $Y$ on $X$ is 
+    \[ (\beta_0, \beta_1) = \argmin_{b_0,b_1} \Er[(Y - b_0 - b_1
+    X)^2 ] \] 
+    i.e. $\beta_0$ and $\beta_1$ are the slope and intercept that
+    minimize the expected square error of $Y - (\beta_0 + \beta_1 X)$ 
+  \item Calculating $\beta_0$ and $\beta_1$:
+    \begin{itemize}
+    \item First order conditions:
+      \begin{align}
+        [b_0]: 0 = & \frac{\partial}{\partial b_0} \Er[(Y - b_0 - b_1
+        X)^2 ] \notag \\
+         = & \Er\left[\frac{\partial}{\partial b_0}  (Y - b_0 - b_1 X)^2 \right]
+         \notag \\
+        = & \Er\left[ -2(Y - \beta_0 - \beta_1 X) \right] \label{b0}
+      \end{align}
+      and
+      \begin{align}
+        [b_1]:  0 = & \frac{\partial}{\partial b_1} \Er[(Y - b_0 - b_1
+        X)^2 ] \notag \\
+         = & \Er\left[\frac{\partial}{\partial b_1}  (Y - b_0 - b_1 X)^2 \right]
+        \notag \\
+        = & \Er\left[ -2(Y - \beta_0 - \beta_1 X)X \right] \label{b1}
+      \end{align}
+    \item (\ref{b0}) rearranged gives $\beta_0 = \Er[Y] - \beta_1
+      \Er[X]$
+    \item Substituting into (\ref{b1})
+      \begin{align*}
+        0 = & \Er\left[ X(-Y + \Er[Y] - \beta_1 \Er[X] + \beta_1 X) \right] \\
+        = & \Er\left[X(-Y + \Er[Y])\right] + \beta_1\Er\left[X(X -
+          \Er[X])\right] \\
+        = & -\cov(X,Y) + \beta_1 \var(X) \\
+        \beta_1 = & \frac{\cov(X,Y)}{\var(X)}
+      \end{align*}
+    \end{itemize}
+  \item \alert{$\beta_1 = \frac{\cov(X,Y)}{\var(X)}$, $\beta_0 = \Er[Y] - \beta_1
+      \Er[X]$}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}\frametitle{Population regression approximates
+    $\Er[Y|X]$}
+  \begin{lemma} \label{lem:regapprox}
+    The population regression is the minimal mean square error linear
+    approximation to the conditional expectation function, i.e.\
+    {\footnotesize{
+        \begin{align*}
+      \underbrace{\argmin_{b_0, b_1} \Er\left[\left(Y-(b_0 + b_1
+          X) \right)^2\right]}_{\text{population regression}} =
+      \argmin_{b_0, b_1} \underbrace{\Er_X\left[\left(\Er[Y|X] - (b_0 + b_1
+          X)\right)^2\right]}_{\text{MSE of linear approximation to $\Er[Y|X]$}}
+    \end{align*}
+  }}
+  \end{lemma}
+  
+  \begin{corollary} 
+    If $\Er[Y|X] = c + m X$, then the population regression of $Y$ on
+    $X$ equals $\Er[Y|X]$, i.e. $\beta_0 = c$ and $\beta_1 = m$
+  \end{corollary}
+\end{frame}
+
+\begin{frame}[shrink]\frametitle{Proof}
+  \begin{proof}
+    \begin{itemize}
+    \item Let $b^*_0, b^*_1$ be minimizers of MSE of approximation to $\Er[Y|X]$
+    \item Same steps as in population regression formula gives
+      \[ 0 = \Er\left[ -2(\Er[Y|X] - b^*_0 - b^*_1 X) \right]  \]
+      and
+      \[ 0 = \Er\left[ -2(\Er[Y|X] - b^*_0 - b^*_1 X)X \right]  \]
+    \item Rearranging and combining,
+      \begin{align*}
+        b_0^* = \Er[\Er[Y|X]] - b_1^* \Er[X] = \Er[Y] - b_1^* \Er[X]
+      \end{align*}
+      and
+      \begin{align*}
+        0 = & \Er\left[ X(-\Er[Y|X] + \Er[Y] + b^*_1 \Er[X] - b^*_1 X) \right] \\
+        = & \Er\left[X(-\Er[Y|X] + \Er[Y])\right] + b^*_1\Er\left[X(X -
+          \Er[X])\right] \\
+        = & -\cov(X,Y) + b^*_1 \var(X) \\
+        b^*_1 = & \frac{\cov(X,Y)}{\var(X)}      
+      \end{align*}
+    \end{itemize}
+  \end{proof}
+\end{frame}
+
+\subsection{Interpretation}
+\begin{frame} \frametitle{Regression interpretation}
+  \begin{itemize}
+  \item Regression $=$ best linear approximation to $\Er[Y|X]$
+  \item $\beta_0 \approx \Er[Y|X=0]$
+  \item $\beta_1 \approx \frac{d}{dx} \Er[Y|X] \approx$ change in average
+    $Y$ per unit change in $X$
+  \item Not necessarily a causal relationship (usually not)
+  \item Always can be viewed as description of data
+  \end{itemize}
+\end{frame}
+
+\begin{frame}\frametitle{Regression with binary $X$}
+  \begin{columns}[c] % align columns
+    \begin{column}{.48\textwidth}
+      \begin{itemize}
+      \item Suppose $X$ is binary (i.e. can only be $0$ or $1$)
+      \item We know $\beta_0 + \beta_1 X = $ best linear approximation to
+        $\Er[Y|X]$ 
+      \item $X$ only takes two values, so can draw line connecting
+        $\Er[Y|X=0]$ and $\Er[Y|X=1]$, so $\beta_0 + \beta_1 X = \Er[Y|X]$
+        \begin{itemize}
+        \item $\beta_0 = \Er[Y|X=0]$
+        \item $\beta_0 + \beta_1 = \Er[Y|X=1]$
+        \end{itemize}
+      \end{itemize}
+    \end{column}
+    \begin{column}{.48\textwidth}
+      \includegraphics[width=\textwidth]{binary-regression}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% \subsection{Properties}
+
+\section{Sample regression}
+\begin{frame} \frametitle{Sample regression}
+  \begin{itemize}
+  \item Have sample of observations: $\{ (y_i, x_i) \}_{i=1}^n$ 
+  \item The \alert{sample regression} (or when unambiguous just
+    ``regression'') of $Y$ on $X$ is 
+    \[ (\hat{\beta}_0, \hat{\beta}_1) = \argmin_{b_0,b_1}
+    \frac{1}{n}\sum_{i=1}^n (y_i - b_0 - b_1 x_i)^2 \] 
+    i.e. $\hat{\beta}_0$ and $\hat{\beta}_1$ are the slope and intercept that
+    minimize the sum of squared errors, $(y_i - (\hat{\beta}_0 + \hat{\beta}_1 x_i))^2$ 
+    \begin{itemize}
+    \item Same as population regression but with sample average
+      instead of expectation
+    \end{itemize}
+  \item Same calculation as for population regression would show
+    \[ \hat{\beta}_1 = \frac{\widehat{\cov}(X,Y)}{\widehat{\var(X)}} =
+    \frac{\frac{1}{n} \sum_{i=1}^n (x_i -\bar{x})(y_i - \bar{y})}
+    {\frac{1}{n} \sum_{i=1}^n (x_i - \bar{x})^2} \]
+    and 
+    \[ \hat{\beta}_0 = \bar{y} - \hat{\beta}_1 \bar{x} \]
+  \end{itemize}
+\end{frame}
+
+Since $\hat{\beta}_1$ and $\hat{\beta}_0$ come from minimizing a sum
+of squares, they are called the ordinary least squares estimates, or
+OLS for short. 
+
+The formulas for $\hat{\beta}_1$ and $\hat{\beta}_0$ come from the
+first order conditions.  These estimators minimize the sum of squared
+differences between the regression line and the observed $y_i$, 
+\[ (\hat{\beta}_0, \hat{\beta}_1) = \argmin_{b_0,b_1}
+\frac{1}{n}\sum_{i=1}^n (y_i - b_0 - b_1 x_i)^2. \] 
+The first order condition for $\hat{\beta}_0$ is:
+\begin{align*}
+  0 = & \frac{1}{n} \sumin 2(y_i - \hat{\beta}_0 - \hat{\beta}_1 x_i ) 
+\end{align*}
+which can be rearranged to get
+\begin{align*}
+  \hat{\beta}_0 = & \frac{1}{n} \left(\sumin y_i - \hat{\beta}_1 x_i
+  \right) \\
+  \hat{\beta}_0 = & \bar{y} - \hat{\beta}_1 \bar{x}.
+\end{align*}
+The first order condition for $\hat{\beta}_1$ is: 
+\begin{align*}
+  0 = & \frac{1}{n} \sumin 2x_i (y_i - \hat{\beta}_0 - \hat{\beta}_1 x_i ).
+\end{align*}
+Substituting in the previous expression for $\hat{\beta}_0$ gives
+\begin{align*}
+  0 = & \frac{1}{n} \sumin 2 x_i (y_i - \bar{y} + \hat{\beta}_1 \bar{x} - \hat{\beta}_1 x_i ). 
+\end{align*}
+Rearranging to solve for $\hat{\beta}_1$:
+\begin{align*}
+  \hat{\beta}_1 \sumin x_i(x_i - \bar{x}) = & \sumin x_i (y_i -
+  \bar{y}) \\
+  \hat{\beta}_1 = & \frac{\sumin x_i (y_i - \bar{y})}{ x_i (x_i -
+    \bar{x}) } = \frac{\sumin (x_i - \bar{x}) (y_i - \bar{y})}{ (x_i -
+    \bar{x})^2 }.
+\end{align*}
+
+\begin{frame}
+  \frametitle{Sample regression}
+  \begin{itemize}
+  \item Sample regression is an estimator for the population
+    regression
+  \item Given an estimator we should ask:
+    \begin{itemize}
+    \item Unbiased?
+    \item Variance?
+    \item Consistent?
+    \item Asymptotically normal?
+    \end{itemize}
+  \item We will address these questions in the next week or two  
+  \end{itemize}
+\end{frame}
+
+% \begin{frame}[shrink]
+%   \frametitle{True linear model approach to regression}
+%   \begin{itemize}
+%   \item Most authors (like Wooldridge) introduce regression by
+%     starting with a linear model for $Y$:
+%     \[ Y = \alpha_0 + \alpha_1 X + \underbrace{U}_{\text{unobserved}} \] 
+%     with $\Er[U X] = 0$
+%     \begin{itemize}
+%     \item Perspective: model $=$ true description of data generating
+%       process 
+%     \end{itemize}
+%   \item Implications:
+%     \begin{itemize}
+%     \item Population regression coefficients $=$ model coefficients,
+%       i.e. $\beta_0 = \alpha_0$ and $\beta_1 = \alpha_1$
+%     \item Conditional expectation function is linear 
+%       \[ \Er[Y|X] = \alpha_0 + \alpha_1 X \]
+%     \item $\beta_1=\alpha_1$ has causal interpretation as long as we
+%       believe $\Er[U X] = 0$
+%     \item Easier to discuss causality
+%     \item Easier to derive statistical properties
+%     \end{itemize}
+%   \end{itemize}
+% \end{frame}
+
+% \begin{frame}[shrink]
+%   \frametitle{Problems with true linear models}
+%   \begin{itemize}
+%   \item Usually do not believe models are linear, e.g.\ no economic
+%     theory that says the following should be linear:
+%     \begin{enumerate}
+%     \item $\log (wage_i) = \beta_0 + \beta_1 (educ_i) + \epsilon_i$
+%     \item $\log q_t = \beta_0 + \beta_1 \log p_t + \epsilon_t$
+%     \end{enumerate}
+%   \item Usually do not believe error terms are uncorrelated with
+%     covariates, e.g.\
+%     \begin{enumerate}
+%     \item Need $\Er[u_i educ_i]=0$, but $u_i$ probably includes IQ,
+%       propensity to work hard, etc, which should be correlated with
+%       education 
+%     \item Is it supposed to be demand or supply? Either case, changes
+%       in $q_t$ from $\epsilon_t$ generally also change equilibrium $p_t$, so
+%       $\Er[\log p_t \epsilon_t ] \neq 0$
+%     \end{enumerate}
+%   \item Viewing regression as best linear approximation to $\Er[Y|X]$
+%     makes it clear what regression tells you about the data even if
+%     the true model is not linear and does not have $\Er[XU]=0$
+%   \end{itemize}
+% \end{frame}
+
+
+\section{Regression in R}
+
+%% slide about true linear model vs approx CEF
+
+\begin{frame}[fragile,shrink] \frametitle{Regression in R}
+  \begin{lstlisting}
+require(datasets) ## some datasets included with R
+stateDF <- data.frame(state.x77)
+summary(stateDF) ## summary statistics of data
+
+## Sample regression function
+regress <- function(y, x) {
+  beta <- vector(length=2)
+  beta[2] <- cov(x,y)/var(x)
+  beta[1] <- mean(y) - beta[2]*mean(x)
+  return(beta)
+}
+
+## Regress life expectancy on income
+beta <- regress(stateDF[,"Life.Exp"],stateDF$Income)
+beta
+
+## builtin regression 
+lm(Life.Exp ~ Income, data=stateDF)
+## more detailed output
+summary(lm(Life.Exp ~ Income, data=stateDF))
+  \end{lstlisting}
+  \url{https://bitbucket.org/paulschrimpf/econ326/src/master/notes/03/regress.R?at=master}
+\end{frame}
+%$
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\clearpage
+\part{Properties of regression}
+
+\frame{\partpage}
+
+\section{Fitted value and residuals}
+
+These algebraic identities about fitted values and residuals are
+things that we will use repeatedly later. I would not recommend
+spending time trying to memorize these. The important ones will come
+up repeatedly and you will remember them without any special
+effort. The first time we use these identities, we will go through how
+to get them again. We may even go through them yet again the second
+and third time we use them. Eventually we will use some of these
+identities so often that you will either be able to quickly derive
+them or just remember them.
+
+\begin{frame}[allowframebreaks]
+  \frametitle{Fitted values and residuals}
+  \begin{itemize}
+  \item \alert{Fitted values}: 
+    \[ \hat{y}_i = \hat{\beta}_0 +
+    \hat{\beta}_1 x_i \]
+  \item \alert{Residuals}: 
+    \[\hat{\epsilon}_i = y_i - \hat{\beta}_0 -
+    \hat{\beta}_1 x_i = y_i  - \hat{y}_i \] 
+    \[ y_i = \hat{y}_i + \hat{\epsilon}_i \]
+  \item Sample mean of residuals $=0$
+    \begin{itemize}
+    \item First order condition for $\hat{\beta}_0$,
+      \begin{align*}
+        0 = &\avg (y_i - \hat{\beta}_0 - \hat{\beta}_1
+        x_i) \\ 
+        0 = & \avg \hat{\epsilon}_i 
+      \end{align*}
+    \end{itemize}
+  \item Sample covariance of $x$ and $\hat{\epsilon}$ $= 0$
+    \begin{itemize}
+    \item First order condition for $\hat{\beta}_1$,
+      \begin{align*}
+        0 = &\avg (y_i - \hat{\beta}_0 - \hat{\beta}_1
+        x_i)x_i \\ 
+        0 = & \avg \hat{\epsilon}_i x_i
+      \end{align*}
+    \end{itemize}
+  \item Sample mean of $\hat{y}_i = \bar{y} = \hat{\beta}_0 +
+    \hat{\beta}_1 \bar{x}$ 
+    \begin{align*}
+      \avg y_i = & \avg \hat{y}_i + \hat{\epsilon}_i \\
+      = & \avg \hat{y}_i \\
+      = & \avg  \hat{\beta}_0 + \hat{\beta}_1 x_i \\
+      = & \hat{\beta}_0 + \hat{\beta}_1 \bar{x}
+    \end{align*}
+  \item Sample covariance of $y$ and $\hat{\epsilon}$ = sample
+    variance of $\hat{\epsilon}$:
+    \begin{align*}
+      \avg y_i (\hat{\epsilon}_i - \bar{\hat{\epsilon}}) = & \avg y_i
+      \hat{\epsilon}_i \\
+      = & \avg (\hat{\beta}_0 + \hat{\beta}_1 x_i +
+      \hat{\epsilon}_i)\hat{\epsilon}_i \\
+      = & \hat{\beta}_0 \avg \hat{\epsilon}_i + \beta_1 \avg x_i
+      \hat{\epsilon}_i + \avg \hat{\epsilon}_i^2 \\
+      = & \avg \hat{\epsilon}_i^2 
+    \end{align*}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{$R^2$}
+  \begin{itemize}
+  \item Decompose $y_i$
+    \[ y_i = \hat{y}_i + \hat{\epsilon}_i \]
+  \item Total sum of squares $=$ explained sum of squares $+$ sum of
+    squared residuals
+    \[ \underbrace{\avg (y_i - \bar{y})^2}_{SST} =
+    \underbrace{\avg (\hat{y}_i - \bar{y})^2}_{SSE} +
+    \underbrace{\avg \hat{\epsilon}_i^2}_{SSR} \]
+  \item \alert{R-squared}: fraction of sample variation in $y$ that is
+    explained by $x$
+    \[ R^2 = \frac{SSE}{SST} = 1 - \frac{SSR}{SST} =o
+    \widehat{\corr}(y,\hat{y}) \]
+    \begin{itemize}
+    \item $0 \leq R^2 \leq 1$
+    \item If all data on regression line, then $R^2 = 1$
+    \item Magnitude of $R^2$ does not have direct bearing on economic
+      importance of a regression
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\section{Statistical properties}
+
+\subsection{Unbiased}
+\begin{frame}
+  \frametitle{Unbiased}
+  \begin{itemize}
+  \item $\Er[\hat{\beta}] = ?$
+  \item Assume:
+    \begin{enumerate}
+    \item[SLR.1]\label{s1} (linear model) $ y_i = \beta_0 + \beta_1
+      x_i + \epsilon_i $
+    \item[SLR.2]\label{s2} (independence) $\{(x_i,y_i)\}_{i=1}^n$ is independent random
+      sample
+    \item[SLR.3]\label{s3} (rank condition) $\widehat{\var}(X) > 0$
+    \item[SLR.4]\label{s4} (exogeneity) $\Er[\epsilon | X] = 0$
+    \end{enumerate}
+  \item Then, $\Er[\hat{\beta}_1] = \beta_1$ and $\Er[\hat{\beta}_0] = \beta_0$
+  \end{itemize}
+\end{frame}
+
+It is more important to understand the meaning of these four
+assumptions (discussed below) than the proof that regression is
+unbiased.  
+\begin{proof}[Regression is unbiased]
+  We need to calculate $\Er[\hat{\beta}]$. First, substitute in the
+  formula for $\hat{\beta}$.
+  \begin{align*}
+    \Er[\hat{\beta}_1] = & \Er\left[ \frac{\sumin (x_i - \bar{x}) y_i
+      }{\sumin (x_i - \bar{x})x } \right] 
+  \end{align*}
+  Next, substitute in the model for $y_i$, $y_i = \beta_0 + \beta_1
+  x_i + \epsilon_i$, 
+  \begin{align*}
+    \Er[\hat{\beta}_1] = & \Er\left[ \frac{\sumin (x_i - \bar{x}) (\beta_0 + \beta_1
+  x_i + \epsilon_i)
+      }{\sumin (x_i - \bar{x})x } \right] \\
+    & \text{ rearrange } \\
+    = & \Er\left[ \frac{ \overbrace{\sumin x_i - \bar{x}}^{=0}}{\sumin
+        (x_i - \bar{x})x } \beta_0 + \overbrace{\left(\frac{\sumin (x_i - \bar{x})
+            x_i}{\sumin (x_i - \bar{x})x }\right)}^{=1} \beta_1 +
+      \frac{\sumin (x_i - \bar{x})\epsilon_i} {\sumin (x_i - \bar{x})x }
+    \right] \\
+    & \text{ use linearity of expectation } \\ 
+    = & \beta_1 + \Er\left[ \frac{\sumin (x_i - \bar{x})\epsilon_i} {\sumin (x_i - \bar{x})x }
+    \right] \\
+    & \text{ use iterated expectations } \\
+    = & \beta_1 + \Er_X\left[ \Er_{\epsilon|X}\left[\left. \frac{\sumin (x_i -
+            \bar{x})\epsilon_i} {\sumin (x_i - \bar{x})x} \right\vert x_1,
+        x_2, ..., x_n \right]\right] \\
+    & \text{ conditional on $x_1, ..., x_n$, $x_i$ is constant} \\
+    = & \beta_1 + \Er_X\left[ \frac{\sumin (x_i -
+        \bar{x})\Er[\epsilon_i|x_1, ..., x_n]} {\sumin (x_i -
+        \bar{x})x} \right] \\
+    & \text{ independent observations implies $\Er[\epsilon_i|x_1, ...,
+      x_n] = \Er[\epsilon_i | x_i]$ } \\
+    = & \beta_1 + \Er_X\left[ \frac{\sumin (x_i -
+        \bar{x})\Er[\epsilon_i|x_i]} {\sumin (x_i - \bar{x})x} \right] \\
+    & \text{ exogeneity assumption says that $\Er[\epsilon_i | x_i] =
+      0$.} \\ 
+    = & \beta_1
+  \end{align*}
+\end{proof}
+Note that the first few steps of the above proof showed that 
+\begin{align*}
+  \hat{\beta}_1 = \beta_1 + \frac{\sumin (x_i - \bar{x})
+    \epsilon_i}{\sumin (x_i - \bar{x})^2}. 
+\end{align*}
+This is a very useful expression that can be used as a starting point
+for calculating the variance of $\hat{\beta}_1$, and thinking about
+what happens if exogeneity fails and $\Er[\epsilon|x] \neq 0$.
+
+\subsection{Variance}
+
+\begin{frame}
+  \frametitle{Variance}
+  \begin{itemize}
+  \item $\var(\hat{\beta})?$
+  \item Assume SLR.1-4 and
+    \begin{enumerate}
+    \item[SLR.5]\label{s5} (homoskedasticity) $\var(\epsilon | X) =
+      \sigma^2$
+    \end{enumerate}
+  \item Then, 
+    \[ \var(\hat{\beta}_1 | \{x_i\}_{i=1}^n ) =
+    \frac{\sigma^2}{\sum_{i=1}^n (x_i - \bar{x})^2} \]
+    and 
+    \[ \var(\hat{\beta}_0 | \{x_i\}_{i=1}^n ) =
+    \frac{\sigma^2 \avg x_i^2 }{\sum_{i=1}^n (x_i - \bar{x})^2} \]
+  \end{itemize}
+\end{frame}
+
+As in the proof that regression is unbiased, 
+\begin{align*}
+  \hat{\beta}_1 = \beta_1 + \frac{\sumin (x_i - \bar{x})
+    \epsilon_i}{\sumin (x_i - \bar{x})^2}. 
+\end{align*}
+We now want to take the variance of this expression. Before doing so,
+it will be useful to review some properties of the variance of a sum
+of random variables. 
+\begin{lemma}
+  Let $a$, $b$, and $c$ be constants, and $Z$ and $W$ be random
+  variables. Then,
+  \[ \var(a + bZ + cW) = b^2 \var(Z) + c^2 \var(W) + 2 bc
+  \cov(Z,W). \]
+\end{lemma}
+\begin{proof}
+  We can prove this using the definition of variance. 
+  \begin{align*}
+    \var(a + bZ + cW) = & \Er\left[ \left(a + bZ + cW - \Er[a + bZ + cW]\right)^2 \right] \\
+    = & \Er\left[ \left(a + bZ + cW - a - b\Er[Z] - c\Er[W]\right)^2
+    \right] \\
+    = & \Er\left[\left(b(Z - \Er[Z]) + c(W - \Er[W]) \right)^2 \right]
+    \\
+    = & \Er\left[ b^2 (Z - \Er[Z])^2 + 2bc (Z - \Er[Z])(W - \Er[W]) +
+      c^2 (W - \Er[W])^2 \right] \\
+    = & b^2\Er\left[  (Z - \Er[Z])^2\right] + 2bc \Er\left[ (Z - \Er[Z])(W - \Er[W]) \right]+
+    c^2 \Er\left[ (W - \Er[W])^2 \right] \\
+    = & b^2 \var(Z) + c^2 \var(W) + 2 bc \cov(Z,W)
+  \end{align*}
+\end{proof}
+Generalizing the above to the sum of more than two random variables,
+we have
+\begin{corollary}
+  Let $a_1, ..., a_n$ be constants, and $Z_1, ..., Z_n$ be random
+  variables, then,
+  \[
+  \var\left( \sumin a_i Z_i \right)  = \sumin \sum_{j=1}^n a_i a_j
+  \cov(Z_i, Z_j) 
+  \]
+  Futhermore, if $Z_i$ and $Z_j$ are independent (or just
+  uncorrelated) for $i \neq j$, then
+  \[
+  \var\left( \sumin a_i Z_i \right)  = \sumin a_i^2 \var(Z_i)
+  \]
+\end{corollary}
+We can apply this corollary to 
+\begin{align*}
+  \var(\hat{\beta}_1|x) = & \var\left(\left. \beta_1 + \frac{\sumin (x_i - \bar{x})
+        \epsilon_i}{\sumin (x_i - \bar{x})^2} \right\vert x \right)  \\
+  = & \var\left(\left. \sumin \underbrace{\frac{x_i - \bar{x}}{\sumin (x_i -
+          \bar{x})^2}}_{a_i} \underbrace{\epsilon_i}_{Z_i} \right\vert x
+  \right)
+  & \text{ using the corollary } \\
+  = & \sumin \sum_{j=1}^n \frac{x_i - \bar{x}}{\sumin (x_i -
+    \bar{x})^2} \frac{x_j - \bar{x}}{\sumin (x_i -
+    \bar{x})^2} \cov(\epsilon_i, \epsilon_j | x)
+  & \text{ independence } \\
+  = & \sumin \left(\frac{x_i - \bar{x}}{\sumin x_i - \bar{x}}
+  \right)^2 \var(\epsilon_i | x) 
+  & \text{ homoskedasticity} \\
+  = & \sumin \frac{(x_i - \bar{x})^2}{\left( \sumin (x_i - \bar{x})^2
+    \right)^2} \sigma_\epsilon^2 \\
+  = & \frac{\sigma_\epsilon^2}{\sumin (x_i - \bar{x})^2}.
+\end{align*}
+
+\subsection{Distribution}
+\begin{frame}
+  \frametitle{Distribution with normal errors}
+  \begin{itemize}
+  \item Assume SLR.1-SLR.5 and
+    \begin{enumerate}
+    \item[SLR.6] (normality) $\epsilon_i|x_i \sim N(0,\sigma^2$)
+    \end{enumerate}
+  \item Then $Y|X \sim N(\beta_0 + \beta_1 X, \sigma^2)$, and
+    \[ \hat{\beta}_1|\{x_i\}_{i=1}^n \sim N\left(\beta_1, \frac{\sigma^2}{\sum_{i=1}^n
+        (x_i - \bar{x})^2} \right) \]
+  \item Even without assuming normality, the central limit theorem
+    implies $\hat{\beta}$ is asymptotically normal (details in a later
+    lecture)
+  \end{itemize}
+\end{frame}
+
+An important property of normal random variables is that if $Z$ and
+$W$ are independent, and $Z \sim N(\mu_z, \sigma_z^2)$ and $W \sim
+N(\mu_w, \sigma_w^2)$, then 
+\[ a + bZ + cW \sim N(a + b \mu_z + c \mu_w, b^2 \sigma^2_z + c^2
+\sigma^2_w). \] If we assume that $\epsilon_i$ is normally distributed
+conditional on $x$, then since $\hat{\beta}_1$ is just a sum of the
+$\epsilon_i$,\footnote{Specifically, $ \hat{\beta}_1 = \beta_1 +
+  \frac{\sumin (x_i - \bar{x}) \epsilon_i}{\sumin (x_i -
+    \bar{x})^2}$.}
+$\hat{\beta}_1$ will also be normally distributed. 
+
+\begin{frame} \frametitle{Summary}
+  \begin{itemize}
+  \item Simple linear regression model assumptions:
+    \begin{enumerate}
+    \item[SLR.1] (linear model) $ Y_i = \beta_0 + \beta_1 x_i + \epsilon_i $
+    \item[SLR.2] (independence) $\{(x_i,y_i)\}_{i=1}^n$ is independent random
+      sample
+    \item[SLR.3] (rank condition) $\widehat{\var}(X) > 0$
+    \item[SLR.4] (exogeneity) $\Er[\epsilon | X] = 0$
+    \item[SLR.5] (homoskedasticity) $\var(\epsilon | X) =
+      \sigma^2$
+    \item[SLR.6] (normality) $\epsilon_i|x_i \sim N(0,\sigma^2)$
+    \end{enumerate}
+  \item $\hat{\beta}$ unbiased if SLR.1-SLR.4
+  \item If also SLR.5, then $\var(\hat{\beta}_1 | \{x_i\}_{i=1}^n ) =
+    \frac{\sigma^2}{\sum_{i=1}^n (x_i - \bar{x})^2}$ 
+  \item If also SLR.6, then $\hat{\beta}_1|\{x_i\}_{i=1}^n \sim
+    N\left(\beta_1, \frac{\sigma^2}{\sum_{i=1}^n (x_i - \bar{x})^2}
+    \right)$
+  \end{itemize}
+\end{frame}
+
+\subsection{Discussion of assumptions}
+\begin{frame}[allowframebreaks]
+  \frametitle{Discussion of assumptions}
+  \begin{itemize}
+  \item[SLR.1] Having a linear model makes it easier to state the other
+    assumptions, but we could instead start by saying let $\beta_1 =
+    \frac{\cov(X,Y)}{\var(X)}$ and $\beta_0 = \Er[Y] - \beta_1 \Er[X]$
+    be the population regression coefficients and define $\epsilon_i =
+    y_i - \beta_0 - \beta_1 x_i$
+  \end{itemize}
+\end{frame}
+
+To say whether an estimator is unbiased, we first have to define what
+parameter we want to estimate. Assuming that there is a linear model
+defines the parameter we want to estimate. This linear model could be
+population regression, in which case, $\beta_1 = \frac{\cov(X,Y)
+}{\var(X)}$, and by construction we must have
+$\Er[X\epsilon]=0$. 
+
+However, the linear model may also be motivated by economic
+theory. For example, consider a Cobb-Douglass production function with
+only one input, labor,
+\[ Y = A L^\alpha, \] 
+where $Y$ is output, $L$ is labor, and $A$ is productivity. If we take logs, then
+\[ \log Y = \log A + \alpha \log L. \]
+If we rearrange slightly, we get something that looks just like a
+linear regression model, 
+\[ \underbrace{\log Y_i}_{y_i} = \underbrace{\Er[\log A]}_{\beta_0}
++ \underbrace{\alpha}_{\beta_1} \underbrace{\log L_i}_{x_i} +
+\underbrace{(\log{A}_i - \Er[\log A])}_{\epsilon_i}. \]
+If this is the model we want to estimate, then $\epsilon_i$ is not the
+error term in the population regression. Instead $\epsilon_i$ is the
+difference between the log productivity of firm $i$ and average log
+productivity. It is unlikely that this $\epsilon_i$ would be
+uncorrelated with $\log L_i$. More productive firms generally choose
+to use more inputs, so we should suspect that $\epsilon_i$ and $\log
+L_i$ are positively correlated.
+
+\begin{frame}[allowframebreaks]
+  \frametitle{Discussion of assumptions}
+  \begin{itemize}
+  \item[SLR.2] Independent observations is a good assumption for data
+    from a simple random sample
+    \begin{itemize}
+    \item Common situations where it fails in
+      economics are when we have a time series of observations,
+      e.g.\ $\{(x_t,y_t)\}_{t=1}^n$ could be unemployment and GDP of
+      Canada for many different years; and clustering, e.g.\ the data
+      could be students test scores and hours studying and our sample
+      consists of randomly chosen courses or schools---students in the
+      same course would not be independent, but across different courses
+      they might be.
+    \item Still have $\Er[\hat{\beta}_1] = \beta_1$ with
+      non-independent observations as long as $\Er[\epsilon_i | x_1, ..., x_n] = 0$
+    \item The variance of $\hat{\beta}_1$ will change with
+      non-independent observations
+    \item
+      \href{https://bitbucket.org/paulschrimpf/econ326/src/master/notes/03/dependent.R?at=master}
+      {Simulation code}
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+Independence says that knowing the values of $x_1$ and $y_1$ tells you
+nothing about the distribution of $x_2$ and $y_2$ (or any other
+observation). When we have cross-sectional data, this assumption
+usually makes sense. In economics, we sometimes deal with time-series
+data, where $(x_1,y_1)$ would be the observation of something at time
+$1$ and $(x_2,y_2)$ is the observation that same thing at time $2$. In
+this case, independence is unlikely to hold. Another common situation
+is panel data, where we observe a sample of individuals over time, so
+$(x_{it}, y_{it})$ would be what we observe from individual $i$ at
+time $t$. Again, it is unlikely that these observations would be
+independent over time.  Later in the course, we will talk about how to
+deal with non-independent observations.
+
+\begin{frame}[allowframebreaks]
+  \frametitle{Discussion of assumptions}
+  \begin{itemize}
+  \item[SLR.3] If $\widehat{\var}(X) = 0$, then 
+    $\hat{\beta}_1$ involves dividing by $0$
+    \begin{itemize}
+    \item If there is no variation in $X$, then we cannot see how
+      $Y$ is related to $X$
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[allowframebreaks]
+  \frametitle{Discussion of assumptions}
+  \begin{itemize}
+  \item[SLR.4] To think about mean independence of $\epsilon$ from $x$
+    we should have a model motivating the regression
+  \end{itemize}
+  \begin{columns}[c] % align columns
+    \begin{column}{.48\textwidth}
+      \begin{itemize}
+      \item If the model we want is just a population regression,
+        then automatically $\Er[\epsilon X] = 0$, and $\Er[\epsilon|X] =
+        0$ if the conditional expectation function is linear; if
+        conditional expectation nonlinear maybe still a useful
+        approximation       
+      \end{itemize}
+    \end{column}
+    \begin{column}{.48\textwidth}
+      \includegraphics[width=\textwidth]{nonlinear} \\
+      \href{https://bitbucket.org/paulschrimpf/econ326/src/master/notes/03/nonlinear.R?at=master}
+      {Code}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}[allowframebreaks]
+  \frametitle{Discussion of assumptions}
+  \begin{itemize}
+  \item[SLR.4] To think about mean independence of $\epsilon$ from $x$
+    we should have a model motivating the regression
+  \end{itemize}
+  \begin{columns}[c] % align columns
+    \begin{column}{.48\textwidth}
+      \begin{itemize}
+      \item If the model we want is anything else, then maybe
+        $\Er[\epsilon X] \neq 0$ (and $\Er[\epsilon | X] \neq 0$), e.g.\ 
+        \begin{itemize}
+        \item Demand curve 
+          \[ p_i = \beta_0 + \beta_1 q_i + \epsilon_i \]
+          $\epsilon_i = $ everything that affects price other than
+          quantity. $q_i$ determined in equilibrium implies
+          $\Er[\epsilon_i | q_i] \neq 0$ 
+        \item $\Er[\hat{\beta}_1] \neq \beta_1$ and $\hat{\beta}_1$ does
+          not tell us what we want
+        \end{itemize}
+      \end{itemize}
+    \end{column}
+    \begin{column}{.48\textwidth}
+      \includegraphics[width=\textwidth]{endogenous} \\
+      \href{https://bitbucket.org/paulschrimpf/econ326/src/master/notes/03/endogenous.R?at=master}
+      {Code}
+    \end{column}
+  \end{columns}
+\end{frame}
+  
+
+Exogeneity is the most important assumption underlying regression. In
+fact, estimating any economic model using any method will involve some
+kind of exogeneity assumption. By this, we mean that every estimation
+method requires assuming some error term is either completely
+independent of some observable ($F_{\epsilon|x}(\epsilon|x) =
+F_\epsilon(\epsilon)$), mean independent of some observable
+($\Er[\epsilon|X] = 0$), or at least uncorrelated with an observable
+($\Er[\epsilon X] = 0$). Much of what separates good empirical work in
+economics from bad is how plausible are the exogeneity
+assumptions. Often, economic theory can help us decide whether or
+not an exogeneity assumption is plausible. Consider the 
+production function example from earlier, 
+\[ \underbrace{\log Y_i}_{y_i} = \underbrace{\Er[\log A]}_{\beta_0}
++ \underbrace{\alpha}_{\beta_1} \underbrace{\log L_i}_{x_i} +
+\underbrace{(\log{A}_i - \Er[\log A])}_{\epsilon_i}. \]
+To think about whether mean independence of the error term,
+$\Er[\underbrace{(\log{A} - \Er[\log A])}|\log L]=0$, makes sense in
+this model, we should think about how $L$ is determined. The firm
+chooses how much labor to use. Suppose the firm faces output price $p$
+and wage $w$. If the firm chooses $L$ knowing its productivity, then
+the firm solves,
+\begin{align*}
+   \max_L p A L^\alpha - wL 
+\end{align*}
+The first order condition is 
+\begin{align*}
+  p A \alpha L^{\alpha -1} - w = & 0.
+\end{align*}
+If we solve for $A$, we get
+\begin{align*}
+  A = & \frac{w}{p \alpha } L^{1-\alpha} \\
+  \log A = \log\left(\frac{w}{p \alpha }\right) + (1-\alpha) \log L
+\end{align*}
+so
+\begin{align*}
+  \Er[ \log A | \log L ] =  (1-\alpha) \log L +
+  \Er\left[\left . \log\left(\frac{w}{p \alpha }\right) \right| \log L
+  \right] 
+\end{align*}
+This will not be a constant unless $\alpha = 1$ and $\frac{w}{p}$ is
+mean independent of $\log L$. Both of these are unlikely to
+hold. Unless $\Er[ \log A | \log L ] $ is constant,
+$\Er[\underbrace{(\log{A} - \Er[\log A])}|\log L] \neq 0$.  Therefore,
+exogeneity is not a good assumption in this model, and regression will
+not give an unbiased estimate of the production function. 
+
+\begin{frame}[allowframebreaks]
+  \frametitle{Discussion of assumptions}
+  \begin{itemize}
+  \item[SLR.5] Homoskedasticity: variance of $\epsilon$ does not
+    depend on $X$ \\
+    \begin{tabular}{cc} 
+      \alert{Homoskedastic} & \alert{Heteroskedastic} \\ 
+      \includegraphics[width=0.4\textwidth]{homoskedastic} &
+      \includegraphics[width=0.4\textwidth]{heteroskedastic} 
+    \end{tabular} \\
+    \href{https://bitbucket.org/paulschrimpf/econ326/src/master/notes/03/skedastic.R?at=master}
+    {Code}
+    \begin{itemize}
+    \item \alert{Heteroskedasticity} is when $\var(\epsilon|X)$ varies
+      with $X$
+    \item If there is heteroskedasticity, the variance of
+      $\hat{\beta}_1$ is different, but we can fix it 
+    \item ``robust standard errors'' / ``heteroscedasticity-consistent
+      (HC) standard errors'' / ``Eicker–Huber–White standard errors''
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+Homoskedasticity is a strong assumption that is usually not very
+plausible. Therefore, in practice, economists almost always calculate
+heteroscedasticity-robust standard errors.
+
+\begin{frame}[allowframebreaks]
+  \frametitle{Discussion of assumptions}
+  \begin{itemize}
+  \item[SLR.6] If $\epsilon_i|x_i \sim N$, then $\hat{\beta}_1 \sim N$
+    \begin{itemize}
+    \item What if $\epsilon_i$ not normally distributed?
+    \item We will see that $\hat{\beta}_1$ still asymptotically normal
+    \item
+      \href{https://bitbucket.org/paulschrimpf/econ326/src/master/notes/03/reg-clt.R?at=master}
+      {Simulation}
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Discussion of assumptions}
+
+  \includegraphics[width=\figwidth,height=\figheight,keepaspectratio]{beta1} 
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{Discussion of assumptions}
+
+  \includegraphics[width=\figwidth,height=\figheight,keepaspectratio]{zbeta1} 
+
+\end{frame}
+
+\section{Examples}
+\begin{frame}\frametitle{Example: smoking and cancer}
+  \begin{itemize}
+  \item Data on per capita number of cigarettes sold and death rates
+    per thousand from cancer for U.S. states in 1960
+  \item \url{http://lib.stat.cmu.edu/DASL/Datafiles/cigcancerdat.html}
+  \item Death rates from: lung cancer, kidney cancer, bladder cancer,
+    and leukemia
+    \href{https://bitbucket.org/paulschrimpf/econ326/src/master/notes/03/smoking.R?at=master} {Code}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}\frametitle{Smoking and lung cancer}
+
+  \includegraphics[width=\figwidth,height=\figheight]{cigLung}   
+
+\end{frame}
+
+\begin{frame}\frametitle{Smoking and kidney cancer}
+
+  \includegraphics[width=\figwidth,height=\figheight]{cigKidney}   
+
+\end{frame}
+
+\begin{frame}\frametitle{Smoking and bladder cancer}
+
+  \includegraphics[width=\figwidth,height=\figheight]{cigBladder}   
+
+\end{frame}
+
+\begin{frame}\frametitle{Smoking and leukemia}
+
+  \includegraphics[width=\figwidth,height=\figheight]{cigLeukemia}   
+
+\end{frame}
+
+\begin{frame}\frametitle{Example: convergence in growth}
+  \begin{itemize}
+  \item Data on average growth rate from 1960-1995 for 65 countries
+    along with GDP in 1960, average years of schooling in 1960, and
+    other variables
+  \item From
+    \url{http://wps.aw.com/aw_stock_ie_2/50/13016/3332253.cw/index.html},
+    originally used in \cite{beck2000}
+  \item Question: has there been in convergence, i.e.\ did poorer
+    countries in 1960 grow faster and catch-up?    
+  \item \href{https://bitbucket.org/paulschrimpf/econ326/src/master/notes/03/growth.R?at=master} {Code}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}\frametitle{GDP in 1960 and growth}
+
+  \includegraphics[width=\figwidth,height=\figheight]{growGDP}   
+
+\end{frame}
+
+\begin{frame}\frametitle{Years of schooling in 1960 and growth}
+
+  \includegraphics[width=\figwidth,height=\figheight]{growSchool}   
+
+\end{frame}
+
+\begin{frame}
+  \begin{itemize}
+  \item Things look different 1995-2014
+  \item
+    \href{https://bitbucket.org/paulschrimpf/econ326/src/master/notes/03/growth-updated.R?at=master}
+    {Code to download and recreate results using updated growth data
+      through 2014 from the World Bank}
+  \end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Inference}
+\begin{frame}[allowframebreaks]
+  \frametitle{Inference with normal errors}
+  \begin{itemize}
+  \item Regression estimates depend on samples, which are random, so
+    the regression estimates are random
+    \begin{itemize}
+    \item Some regressions will randomly look ``interesting'' due to
+      chance 
+    \end{itemize}
+  \item Logic of hypothesis testing: figure out probability of getting
+    an interesting regression estimate due solely to change
+  \item Null hypothesis, $H_0:$ the regression is uninteresting,
+    usually $\beta_1 = 0$
+  \item With assumptions SR.1-SR.6 and under $H_0: \beta_1 =
+    \beta_1^\ast$, we know
+    \[ \hat{\beta} \sim N\left(\beta_1^\ast,
+      \frac{\sigma^2_\epsilon}{\sum_{i=1}^n (x_i - \bar{x})^2}
+    \right) \]
+    or equivalently,
+    \[ t \equiv \frac{\hat{\beta} - \beta_1^\ast}{\sigma_\epsilon /
+      \sqrt{\sum_{i=1}^n (x_i - \bar{x})^2} } \sim N(0,1) \]
+  \item P-value: the probability of getting a regression estimate as
+    or more ``interesting'' than the one we have
+    \begin{itemize}
+    \item As or more interesting $=$ as far or further away from
+      $\beta_1^\ast$
+    \item If we are only interested when $\hat{\beta}_1$ is on one
+      side of $\beta_1^\ast$, then we have a one sided alternative,
+      e.g.\ $H_a: \beta_1 > \beta_1^\ast$
+    \item If we are equally interested in either direction, then $H_a:
+      \beta_1 \neq \beta_1^\ast$
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame} 
+
+  \includegraphics[width=\figwidth,height=\figheight]{oneSided} 
+
+\end{frame}
+
+\begin{frame} 
+
+  \includegraphics[width=\figwidth,height=\figheight]{twoSided} 
+
+\end{frame}
+  
+\begin{frame}[allowframebreaks]
+  \frametitle{Inference with normal errors}
+  \begin{itemize}
+  \item One-sided p-value: $p = \Phi(-\abs{t}) = 1-\Phi(\abs{t})$ \\
+  \item Two-sided p-value: $p = 2\Phi(-\abs{t}) = 2(1-\Phi(\abs{t}))$
+  \item Interpretation:
+    \begin{itemize}
+    \item The probability of getting an estimate as strange as the one
+      we have if the null hypothesis is true.
+    \item It is \emph{not} about the probability of $\beta_1$ being
+      any particular value. $\beta_1$ is not a random variable. It is
+      some unknown number. The data is what is random. In particular,
+      the p-value is \emph{not} the probability that that $H_0$ is false
+      given the data.
+    \end{itemize}
+  \item Hypothesis testing: we must make a decision (usually reject or
+    fail to reject $H_0$)
+    \begin{itemize}
+    \item Choose significance level $\alpha$ (usually 0.05 or 0.10)
+    \item Construct procedure such that if $H_0$ is true, we will
+      incorrectly reject with probability $\alpha$
+    \item Reject null if p-value less than $\alpha$
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\subsection{Examples (continued)}
+\begin{frame}\frametitle{Smoking and cancer}
+
+  \input{fig/smoking}
+
+\end{frame}
+
+\begin{frame}\frametitle{Growth and GDP}
+
+  \input{fig/growth}
+
+\end{frame}
+
+\begin{frame}\frametitle{Caution: multiple testing}
+  \begin{itemize}
+  \item We just looked at 6 regressions, if $H_0: \beta_1 = 0$ is true
+    in all of them the probability that correctly fail to reject all 6
+    null hypotheses with a 5\% test is $0.95^6 = 0.74$ (assuming the 6
+    tests are independent)
+  \item A quarter of the time if we look at 6 regressions, we will
+    randomly find at least significant relationship; if we look at 14
+    regressions the probability that we incorrectly reject a null is
+    more than 0.5
+  \end{itemize}
+\end{frame}
+
+\begin{frame}\frametitle{Caution: economic significance $\neq$
+    statistical significance} 
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+\subsection{Estimating $\sigma_\epsilon^2$}
+
+\begin{frame}[allowframebreaks] 
+  \frametitle{Estimating $\sigma_\epsilon^2$}
+  \begin{itemize}
+  \item Recall that $\var(\hat{\beta}|x_1,...,x_n) =
+    \frac{\sigma^2_\epsilon}{\sumin (x_i - \bar{x})^2} =
+    \frac{\sigma_\epsilon^2}{n \widehat{\var}(x)}$
+  \item $\sigma_\epsilon^2$ unknown
+  \item We estimate $\sigma_\epsilon^2$ using the residuals,
+    \[ \hat{\sigma}_\epsilon^2 = \frac{1}{n-2} \sumin
+    \underbrace{\hat{\epsilon}_i^2}_{=(y_i - \hat{\beta}_0 -
+      \hat{\beta}_1 x_i)^2} \]
+  \item If SLR.1-SLR.5, $\Er[\hat{\sigma}_\epsilon^2 ] = \sigma_\epsilon^2$ 
+  \item Using $\frac{1}{n-2}$ instead of $\frac{1}{n}$ makes
+    $\hat{\sigma}_\epsilon^2$ unbiased
+    \begin{itemize}
+    \item $\hat{\epsilon}_i$ depends on 2 estimated parameters,
+      $\hat{\beta}_0$ and $\hat{\beta}_1$, so only $n-2$ degrees of
+      freedom 
+    \end{itemize}    
+  \item Estimate $\var(\hat{\beta}_1|x_1,...,x_n)$ by 
+    \[ \widehat{\var}(\hat{\beta}_1|x_1,...,x_n) =
+    \frac{\hat{\sigma}^2_\epsilon}{\sumin (x_i - \bar{x})^2} =
+    \frac{\frac{1}{n-2} \sumin \hat{\epsilon}_i^2}{\sumin (x_i -
+      \bar{x})^2} \]
+  \item Standard error of $\hat{\beta}_1$ is
+    $\sqrt{\widehat{\var}(\hat{\beta}_1|x_1,...,x_n)}$ 
+  \item If SLR.1-SLR.6, t-statistic with estimated
+    $\widehat{\var}(\hat{\beta}_1|x_1,...,x_n)$ has a $t(n-2)$
+    distribution instead of $N(0,1)$
+    \[ t = \frac{\hat{\beta}_1 -
+      \beta_1}{\sqrt{\widehat{\var}(\hat{\beta}_1|x_1, ..., x_n)}} \sim
+    t(n-2) \]    
+  \end{itemize}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Confidence intervals}
+
+\begin{frame}[allowframebreaks]\frametitle{Confidence intervals}
+  \begin{itemize}
+  \item $\hat{\beta}_1$ is random
+  \item $\widehat{\var}(\hat{\beta}_1)$, p-values, and hypthesis tests
+    are ways of expressing how random is $\hat{\beta}_1$ 
+  \item Confidence intervals are another
+  \item A $1-\alpha$ confidence interval, $CI_{1-\alpha} =
+    [LB_{1-\alpha}, UB_{1-\alpha}]$ is an interval estimator for
+    $\beta_1$ such that 
+    \[ \Pr(\beta_1 \in CI_{1-\alpha} = 1-\alpha) \]
+    ($CI_{1-\alpha}$ is random; $\beta_1$ is not)
+  \item Recall: if SLR.1-SLR.6, then 
+    \[ \hat{\beta}_1 \sim N\left(\beta_1,\var(\hat{\beta}_1)\right) \]
+    \begin{itemize}
+    \item Implies
+      \begin{align*} 
+        \Pr\left(\hat{\beta}_1 < \beta_1 + \sqrt{\var(\hat{\beta}_1)}
+          \Phi^{-1}(\alpha/2)\right) = & \alpha/2 \\
+        \Pr\left(\hat{\beta}_1 - \sqrt{\var(\hat{\beta}_1)}
+          \Phi^{-1}(\alpha/2) < \beta_1)\right) = & \alpha/2 \\
+      \end{align*}
+      and 
+      \begin{align*} 
+        \Pr\left(\hat{\beta}_1 > \beta_1 + \sqrt{\var(\hat{\beta}_1)}
+          \Phi^{-1}(1-\alpha/2) \right) = & \alpha/2 \\
+        \Pr\left(\hat{\beta}_1 - \sqrt{\var(\hat{\beta}_1)}
+          \Phi^{-1}(1-\alpha/2) > \beta_1 \right) = & \alpha/2
+      \end{align*}
+      so 
+      \begin{align*}
+        \Pr & \begin{pmatrix} \hat{\beta}_1 + \sqrt{\var(\hat{\beta}_1)}
+          \Phi^{-1}(\alpha/2) < \beta_1 \\ \beta_1 < \hat{\beta} +
+          \sqrt{\var(\hat{\beta}_1)} \Phi^{-1}(1-\alpha/2)
+        \end{pmatrix}
+        = \\
+        = & 1- \Pr\left(\hat{\beta}_1 + \sqrt{\var(\hat{\beta}_1)}
+          \Phi^{-1}(\alpha/2) < \beta_1\right) - \\
+         & - 
+        \Pr\left(\hat{\beta}_1 + \sqrt{\var(\hat{\beta}_1)}
+          \Phi^{-1}(1-\alpha/2) > \beta_1\right) \\
+        = & 1 - \alpha
+      \end{align*}
+    \item For $\alpha = 0.05$, $\Phi^{-1}(0.025) \approx -1.96$,
+      $\Phi^{-1}(0.975) \approx 1.96$
+    \item For $\alpha = 0.1$, $\Phi^{-1}(0.05) \approx -1.64$
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Confidence intervals}
+
+  \includegraphics[width=\figwidth,height=\figheight]{ci}
+
+\end{frame}
+
+\begin{frame}\frametitle{Confidence intervals}
+  \begin{itemize}
+  \item $1-\alpha$ confidence interval
+    \[ \hat{\beta}_1 \pm \sqrt{\var(\hat{\beta}_1)}
+    \Phi^{-1}(\alpha/2) \]
+  \item With estimated $\hat{\sigma}_\epsilon^2$, use t distribution
+    instead of normal
+    \[ \hat{\beta}_1 \pm \sqrt{\widehat{\var}(\hat{\beta}_1)}
+    F_{t,n-2}^{-1}(\alpha/2) \]
+    $F_{t,n-2}^{-1} = $ inverse CDF of $t(n-2)$ distribution \\
+    \begin{tabular}{c|cccccc}
+      \multicolumn{7}{c}{{\textbf{$F_{t,n-2}(1-\alpha/2)$}}} \\
+      & \multicolumn{6}{c}{$n-2$} \\
+      $\alpha/2$ & 5 & 10 & 20 & 50 & 100 & $\infty$ \\ \hline
+      0.025 & 2.57 & 2.23 & 2.09 & 2.01 & 1.98 & 1.96 \\
+      0.05 &  2.02 & 1.81 & 1.72 & 1.68 & 1.66 & 1.64 \\ \hline
+    \end{tabular}
+  \end{itemize}  
+\end{frame}
+
+\begin{frame}\frametitle{Example: GDP in 1960 and growth}
+
+  \includegraphics[width=\figwidth,height=\figheight]{growGDP-ci}   
+
+\end{frame}
+
+\begin{frame}\frametitle{Example: Years of schooling in 1960 and
+    growth}
+
+  \includegraphics[width=\figwidth,height=\figheight]{growSchool-ci}   
+
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+\section{Efficiency}
+\begin{frame}[shrink]
+  \frametitle{Gauss-Markov theorem}
+  \begin{itemize}
+  \item The sample regression estimator,
+    \begin{align*} (\hat{\beta}_0, \hat{\beta}_1) = & \argmin \sumin (y_i - b_0 -
+      b_1 x_i)^2 \\
+      \hat{\beta}_1 = & \frac{\sumin (x_i - \bar{x}) y_i}{\sumin(x_i -
+        \bar{x})^2}
+    \end{align*}
+    also called \alert{O}rdinary \alert{L}east \alert{S}quares (OLS)
+    is not the only unbiased estimator of 
+    \[ y_i = \beta_0 + \beta_1 x_i + \epsilon_i \]
+  \item \alert{Gauss-Markov theorem:} if SLR.1-SLR.5, then OLS is the
+    \alert{B}est \alert{L}inear \alert{U}nbiased \alert{E}stimator
+    \begin{itemize}
+    \item Linear means linear in $y$, $\hat{\beta}_1 = \sumin c_i y_i$
+      with $c_i = \frac{(x_i - \bar{x})}{\sumin (x_i - \bar{x})^2}$
+    \item Unbiased means $\Er[\hat{\beta}_1] = \beta_1$
+    \item Best means that among all linear unbiased estimators, OLS
+      has the smallest variance
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}\frametitle{Proof: setup}
+  \begin{itemize}
+  \item Let $\tilde{\beta}_1$ be a linear unbiased estimator of
+    $\beta_1$
+    \begin{itemize}
+    \item Linear: $\tilde{\beta}_1 = \sumin c_i y_i$
+    \item Unbiased: $\Er[\tilde{\beta}_1|x_1, ...,x_n] = \beta_1$ (for all possible
+      $\beta_0,\beta_1$)    
+    \end{itemize}
+  \item We will show that 
+    \[ \var(\tilde{\beta}_1 | x_1, ... , x_n) \geq \var(\hat{\beta}_1
+    | x_1, ..., x_n) \]
+  \end{itemize}  
+\end{frame}
+
+The $c_i$'s in the definition of $\tilde{\beta}_1$ are allowed to be
+nonlinear functions of $x_i$. For example OLS uses $c_i = \frac{(x_i -
+  \bar{x})}{\sum_{j=1}^n (x_j - \bar{x})^2}$. 
+
+\begin{frame}\frametitle{Proof: outline}
+  \begin{enumerate}
+  \item Show that $\sumin c_i = 0$ and $\sumin c_i x_i = 1$
+  \item Show $\cov(\tilde{\beta}_1, \hat{\beta}_1|x_1,...,x_n) =
+    \var(\hat{\beta}_1|x_1, ..., x_n)$
+  \item Show $\var(\tilde{\beta}_1 | x_1, ..., x_n) \geq
+    \var(\hat{\beta}_1 | x_1, ..., x_n)$
+  \item Show $\var(\tilde{\beta}_1 | x_1, ..., x_n) =
+    \var(\hat{\beta}_1 | x_1, ..., x_n)$ only if $\tilde{\beta}_1 =
+    \hat{\beta}_1$ 
+  \end{enumerate}
+  \footnotetext{We will go over the proof in class. See
+    \href{http://faculty.arts.ubc.ca/vmarmer/econ326/326_05_gauss_markov_handout.pdf}
+    {Marmer's slides} or \cite{w2013} 3A for details}
+\end{frame}
+
+\begin{theorem}[Gauss-Markov] 
+  If SLR.1-SLR.5, then OLS is the \alert{B}est \alert{L}inear
+  \alert{U}nbiased \alert{E}stimator. In other words if 
+  \[ \tilde{\beta}_1 = \sum_{i=1}^n c_i y_i \]
+  is another linear (in $y$) unbiased ($\Er[\tilde{\beta}_1|x_1, ..., x_n] = \beta_1$)
+  estimator, then 
+  \[ \var(\tilde{\beta}_1 | x_1, ..., x_n) \geq \var(\hat{\beta}_1 |
+  x_1, ..., x_n) \]
+  where the inequality is strict unless $\tilde{\beta}_1 = \hat{\beta}_1$.
+\end{theorem}
+\begin{proof}  
+  \textbf{Step 1: show that $\sumin c_i = 0$ and $\sumin c_i x_i =
+    1$.} We do this by using the fact that $\tilde{\beta}_1$ is
+  unbiased. Note that 
+  \begin{align*}
+    \Er[\tilde{\beta}_1|x_1, ..., x_n] = & \Er[\sumin c_i y_i |x_1,
+                                           ..., x_n] \\
+    & \text{substitute in the model for $y$} \\
+    = & \Er[\sumin c_i (\beta_0 + \beta_1 x_i + \epsilon_i)|x_1, ..., x_n ] \\
+    & \text{use linearity of expectation} \\
+    = & \beta_0 \sumin \Er[c_i | x_1, ..., x_n] + \beta_1 \sumin x_i
+        \Er[c_i | x_1, ..., x_n]  + \sumin \Er[\epsilon_i c_i | x_1,
+        ... , x_n] \\
+    & \text{$c_i$ is constant given $x_1, ... , x_n$} \\
+    = & \beta_0 \sumin c_i + \beta_1 \sumin x_i c_i \\    
+  \end{align*}
+  Hence, unbiasedness requires 
+  \[ \beta_1 = \beta_0 \sumin c_i + \beta_1 \sumin x_i c_i.  \]
+  An estimator being unbiased means that it is unbiased for any
+  possible value of the true parameters. For the previous equation to
+  hold for all possible $\beta_0$ and $\beta_1$, we need $\sumin c_i =
+  0$ and $\sumin c_i x_i = 1$.
+  
+  \textbf{Step 2:  show $\cov(\tilde{\beta}_1, \hat{\beta}_1|x_1,...,x_n) =
+    \var(\hat{\beta}_1|x_1, ..., x_n)$.} 
+  Substituting in $y_i =
+  \beta_0 + \beta_1 x_i + \epsilon_i$ let's us write $\tilde{\beta}_1$ as
+  \begin{align*}
+    \tilde{\beta}_1 = & \sumin c_i y_i \\
+    = & \sumin c_i (\beta_0 + \beta_1 x_i  + \epsilon_i) \\
+    = & \beta_0 (\sumin c_i) + \beta_1 (\sumin c_i x_i) + (\sumin c_i
+        \epsilon_i) \\
+    & \text{Using result of step 1} \\
+    = & \beta_1 + \sumin c_i \epsilon_i
+  \end{align*}
+  Similarly for $\hat{\beta}_1$, 
+  \begin{align*}
+    \hat{\beta}_1 = & \beta_1 + \sumin \frac{(x_i
+                      -\bar{x})}{\sum_{j=1}^n (x_j - \bar{x})^2}
+                      \epsilon_i  
+  \end{align*}
+  Let $w_i = \frac{(x_i-\bar{x})}{\sum_{j=1}^n (x_j - \bar{x})^2}$ so
+  that we can write 
+  \[ \hat{\beta}_1 = \beta_1 + \sumin w_i \epsilon_i. \]
+  Now let's calculate the covariance of $\tilde{\beta}_1$ and
+  $\hat{\beta}_1$. 
+  \begin{align*}
+    \cov(\tilde{\beta}_1, \hat{\beta}_1 | x_1, ..., x_n) = 
+    &
+      \Er[(\tilde{\beta}_1 - \beta_1) (\hat{\beta}_1 - \beta_1) ] \\
+    = & \Er\left[ \left. \left( \sumin c_i \epsilon_i \right) \left(\sumin
+        w_i \epsilon_i \right)\right\vert x_1, ..., x_n \right] \\
+  = & \sumin c_i w_i \Er[\epsilon_i^2 | x_1, ..., x_n ] + \sumin
+        \sum_{j\neq i} c_i w_j \Er[\epsilon_i \epsilon_j  | x_1, ...,
+        x_n] \\
+    & \text{second term $= 0$ because of independent observations} \\
+    = &  \sumin c_i w_i \Er[\epsilon_i^2 | x_1, ..., x_n] \\
+    & \text{using homoskedasticity} \\
+    = & \sigma^2 \sumin c_i w_i \\
+    & \text{substituting } w_i = \frac{(x_i-\bar{x})}
+      {\sum_{j=1}^n (x_j- \bar{x})^2} \\
+    = & \sigma^2 \sumin c_i \frac{(x_i-\bar{x})}{\sum_{j=1}^n (x_j -
+        \bar{x})^2} \\
+    = & \frac{\sigma^2}{\sum_{j=1}^n (x_j -
+        \bar{x})^2} \left((\sumin c_i x_i) - (\bar{x} \sumin c_i)
+        \right) \\
+    & \text{ using result of step 1} \\
+    = & \frac{\sigma^2}{\sum_{j=1}^n (x_j -
+        \bar{x})^2} \left(1 - \bar{x} 0\right)\\
+    = & \var(\hat{\beta}_1 | x_1, ..., x_n)
+  \end{align*}
+  
+  \textbf{Step 3:  show $\var(\tilde{\beta}_1 | x_1, ..., x_n) \geq
+    \var(\hat{\beta}_1 | x_1, ..., x_n)$.} Consider
+  $\var(\tilde{\beta}_1 - \hat{\beta}_1|x_1, ..., x_n)$. We know that this is $\geq
+  0$ because it is a variance. Also, 
+  \begin{align*}
+    \var(\tilde{\beta}_1 - \hat{\beta}_1|x_1, ..., x_n) = &
+    \var(\tilde{\beta}_1 | x_1, ..., x_n) +     \var(\hat{\beta}_1 |
+    x_1, ..., x_n) - 2\cov(\tilde{\beta}_1,\hat{\beta}_1 | x_1, ...,
+    x_n) \\
+    & \text{Using result of step 2} \\
+    = & \var(\tilde{\beta}_1 | x_1, ..., x_n) -\var(\hat{\beta}_1
+        |x_1, ..., x_n) 
+  \end{align*}
+  Hence, 
+  \begin{align*}
+    \var(\tilde{\beta}_1 - \hat{\beta}_1|x_1, ..., x_n) =
+    \var(\tilde{\beta}_1 | x_1, ..., x_n) -\var(\hat{\beta}_1   |x_1,
+    ..., x_n)   & \geq 0 \\
+    \var(\tilde{\beta}_1 | x_1, ..., x_n) & \geq \var(\hat{\beta}_1 |
+                                            x_1, ..., x_n)
+  \end{align*}
+  
+  \textbf{Step 4: show
+    $\var(\tilde{\beta}_1 | x_1, ..., x_n) = \var(\hat{\beta}_1 | x_1,
+    ..., x_n)$
+    only if $\tilde{\beta}_1 = \hat{\beta}_1$} This step is only
+  needed for the ``where the inequality is strict only if
+  $\tilde{\beta}_1 = \hat{\beta}_1$ part of the theorem. If
+  $\var(\tilde{\beta}_1 | x_1, ..., x_n) = \var(\hat{\beta}_1 | x_1,
+  ..., x_n)$, then
+  \[ \var(\tilde{\beta}_1 - \hat{\beta}_1|x_1, ..., x_n) =
+  \var(\tilde{\beta}_1 | x_1, ..., x_n) -\var(\hat{\beta}_1   |x_1,
+  ..., x_n)   = 0, \]
+  so $\tilde{\beta}_1 - \hat{\beta}_1$ is constant. Since both are
+  unbiased, the constant difference must be zero. Thus,
+  $\tilde{\beta}_1 = \hat{\beta}_1$. 
+\end{proof}
+
+
+
+% \begin{frame}
+%  \tableofcontents  
+%\end{frame}
+
+\begin{frame}[allowframebreaks]
+  \frametitle{References}
+\bibliographystyle{jpe}
+\bibliography{../326}
+\end{frame}
+  
+
+\end{document}

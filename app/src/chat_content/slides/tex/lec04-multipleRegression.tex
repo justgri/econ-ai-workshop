@@ -1,0 +1,710 @@
+\title{Multiple Regression}
+\author{Paul Schrimpf}
+\institute{UBC \\ Economics 326}
+\date{\today}
+
+\graphicspath{{figures/}}
+
+\begin{document}
+
+\frame{\titlepage}
+%\setcounter{tocdepth}{2}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\part{}
+\frame{\partpage}
+
+\begin{frame}
+  \tableofcontents  
+\end{frame}
+
+\begin{frame}
+  \frametitle{References}
+  \begin{itemize}
+  \item \cite{w2013} chapter 3
+  \item \cite{sw2009} chapter 6 (parts of 7,8,9, \& 18 also relevant)
+  %\item \cite{ap2009} pages 48-69
+  \item \cite{ap2014} chapter 2
+  \item \cite{bierens2010mreg}
+  \item \cite{baltagi2002} chapter 4
+  \item \cite{linton2017} Part III (more advanced)
+  \end{itemize}
+\end{frame}
+
+\section{Introduction}
+
+\begin{frame}[allowframebreaks]
+  \frametitle{Why we need a multiple regression model}
+  \begin{itemize}
+  \item There are many factors affecting the outcome variable $y$.
+  \item If we want to estimate the marginal effect of one of the
+    factors (regressors), we need to control for other factors.
+  \item Suppose that we are interested in the effect of $x_1$ on $y$ , but
+    $y$ is affected by both $x_1$ and $x_2$:
+    \begin{align}
+      y_i = \beta_0 + \beta_1 x_{1,i} + \beta_2 x_{2,i} + \epsilon_i \label{mr1}
+    \end{align}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[allowframebreaks]
+  \frametitle{Why we need a multiple regression model}
+  \begin{itemize}
+  \item   Assume:
+    \begin{enumerate}
+    \item[MLR.1] (linear model) 
+    \item[MLR.2] (independence) $\{(x_{1,i},x_{2,i},y_i)\}_{i=1}^n$ is independent random
+      sample
+    \item[MLR.3] (rank condition) no multicollinearity
+    \item[MLR.4] (exogeneity) $\Er[\epsilon | X] = 0$
+    \end{enumerate}
+  \item Suppose we regress $y$ only against $x_1$ :
+    \[ \hat{\beta}_1^s = \frac{\sumin (x_{1,i} - \bar{x}_1)y_i}{\sumin
+        (x_{1,i} - \bar{x}_1)^2 } \]
+  \item What is $\Er[\hat{\beta}_1^s]$?
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Why we need a multiple regression model}
+    \begin{itemize}
+    \item What is $\Er[\hat{\beta}_1^s]$?
+      \begin{align*}
+      \hat{\beta}_1^s = & \frac{\sumin (x_{1,i} - \bar{x}_1)(\beta_0 +
+        \beta_1 x_{1,i} + \beta_2 x_{2,i} + \epsilon_i)} {\sumin
+        (x_{1,i} - \bar{x}_1)^2 } \\ 
+      = & \beta_1 + \beta_2 \frac{\sumin (x_{1,i} - \bar{x}_1)
+        x_{2,i}} {\sumin (x_{1,i} - \bar{x}_1)^2 } +
+      \frac{\sumin (x_{1,i} - \bar{x}_1)
+        \epsilon_{i}} {\sumin (x_{1,i} - \bar{x}_1)^2 } \\
+      \Er[\hat{\beta}_1^s|x\text{'s}] = & \beta_1 + \beta_2 \frac{\sumin (x_{1,i} - \bar{x}_1)
+        x_{2,i}} {\sumin (x_{1,i} - \bar{x}_1)^2 } \\
+      = & \beta_1 + \beta_2
+      \frac{\widehat{\cov}(x_1,x_2)}{\widehat{\var}(x_1)} 
+    \end{align*}
+  \item $\hat{\beta}_1^s$ biased unless $\widehat{\cov(x_1,x_2)} = 0$
+    or $\beta_2 = 0$
+  \end{itemize}
+\end{frame}
+
+We will call the regression of $y$ on only $x_1$ the short regression,
+and the regression of $y$ on $x_1$ and $x_2$ the long regression. The
+short regression coefficient on $x_1$, $\beta_1^s$ captures how as
+$x_1$ varies there is both a direct impact on $y$, $\beta_1$, and an
+indirect impact through how $x_2$ varies with $x_1$,
+$\beta_2 \frac{\widehat{\cov}(x_1,x_2)}{\widehat{\var}(x_1)}$. When we
+look at the long regression, we eliminate this indirect channel,
+effectively holding $x_2$ constant. This is a very important
+concept. In multivariate regression, the interpretation of the slope
+coefficients is that they are the effect of each $x$ variable holding
+all others constant. For example, when there are two regressors,
+$\beta_1$ is the effect of $x_1$ holding $x_2$ constant.
+
+\begin{frame}
+  \frametitle{Omitted variable bias}
+  \begin{itemize}
+  \item When true model is ``long regression''
+    \[ y_i = \beta_0 + \beta_1 x_{1,i} + \beta_2 x_{2,i} +
+    \epsilon_i \]
+    but we only estimate the ``short regression'',
+    \[ y_i = \beta_0 + \beta_1^s x_{1,i} + \underbrace{v_i}_{=\beta_2 x_{2,i} +
+      \epsilon_i} \]
+    then 
+    \begin{align*}
+      \Er[\hat{\beta}_1^s] = & \beta_1 + \beta_2
+      \frac{\widehat{\cov}(x_1,x_2)}{\widehat{\var}(x_1)} 
+    \end{align*}
+  \item If $x_1$ and $x_2$ related, we can no longer say that
+    $\Er[v_i|x_{1,i}] = 0$
+  \item When $x_1$ changes, $x_2$ changes as well, which contaminates
+    estimation of the effect of $x_1$ on $y$
+  \item As a result, the short regression estimate, $\hat{\beta}_1^s$,
+    is biased
+  \end{itemize}
+\end{frame}
+
+Omitted variable bias is a useful way for thinking about how a
+violation of the exogeneity assumption might affect our estimates. For
+example, consider a regression of wages on years of eduction. Let $y =
+$ log wage, $x = $ years of education. The regression model is 
+\[ y_i = \beta_0 + \beta_1 x_i + \epsilon_i, \]
+where we want $\beta_1$ to be the causal effect of education on
+wages. It is likely that there is some unobserved ability, say $a_i$
+that effects both wages and education. Since ability effects wages,
+$a_i$ is part of $\epsilon_i$. Thus, it seems unlikely that
+$\Er[\epsilon_i | x_i] = 0$, so OLS is likely biased. If we think
+about omitted variables bias, we can be more specific about the
+bias. Decompose $\epsilon$ as 
+\[ \epsilon_i = \beta_2 a_i + u_i \]
+where $u_i$ represents all unobservables that affect wages and are
+uncorrelated with ability. Then we have
+\[ y_i = \beta_0 + \beta_1 x_i + \beta_2 a_i + u_i. \]
+Omitted variables bias tells us that 
+\begin{align*}
+  \Er[\hat{\beta}_1^s] = & \beta_1 + \beta_2
+                           \frac{\widehat{\cov}(x,a)}{\widehat{\var}(x)}.
+\end{align*}
+We expect ability to be positively related to wages ($\beta_2>0$) and
+education ($\cov(x,a) > 0$), thus we expect the bivariate regression
+of log wages on education to produce an upward biased estimate of the
+causal effect of education on wages, i.e.
+\begin{align*}
+  \Er[\hat{\beta}_1^s] = & \beta_1 + \beta_2
+                           \frac{\widehat{\cov}(x,a)}{\widehat{\var}(x)}
+                           > \beta_1.
+\end{align*}
+
+\section{Examples}
+
+\subsection{Example: growth, GDP, and schooling}
+
+\begin{frame}\frametitle{Example: growth, GDP, and schooling}
+  \includegraphics[width=\textwidth,height=0.7\textheight,keepaspectratio=TRUE]{growth}
+  \\
+  \footnotetext{
+    \href{https://bitbucket.org/paulschrimpf/econ326/src/master/notes/04/growth-mr.R?at=master}
+    {Code}}
+\end{frame}
+
+\begin{frame}\frametitle{Example: growth, GDP, and schooling}
+  \input{figures/growth}
+\end{frame}
+
+\subsection{California test scores}
+\begin{frame} \frametitle{Test scores and student teacher ratios}
+  \begin{itemize}
+  \item Data from \cite{sw2009}
+  \item School average test score and student teacher ratios
+  \item
+    \href{https://bitbucket.org/paulschrimpf/econ326/src/master/notes/04/caSchool.R?at=master}
+    {Code}   
+  \end{itemize}    
+\end{frame}
+
+\begin{frame} \frametitle{Test scores and student teacher ratios}
+  \input{figures/caTest}
+\end{frame}
+
+\subsection{\cite{chandra2008}}
+\begin{frame}[allowframebreaks]
+  \frametitle{\cite{chandra2008}}
+  ``Does Watching
+  Sex on Television Predict Teen Pregnancy?''
+  \begin{itemize}
+  \item Long regression:
+    \[ preg = \beta_0 + \beta_1 sexTV + \beta_2 totalTV + \epsilon \]
+    \begin{itemize}
+    \item $preg = $ teen pregnancy
+    \item $sexTV =$ hours of television with sexual content
+    \item $totalTV=$ hour of television
+    \end{itemize}
+  \item Short (bivariate) regression:
+    \[ preg = \beta_0^s + \beta_1^s sexTV + v \]
+  \item Results:
+    \begin{itemize}      
+    \item Short: $\hat{\beta}_1^s \sqrt{\widehat{\var}(sexTV)} = 0.18$ 
+    \item Long: $\hat{\beta}_1 \sqrt{\widehat{\var}(sexTV)} = 0.30$
+    \item Also report that
+      \[ totalTV = \gamma_0 + \gamma_1 sexTV + e \]
+      $\hat{\gamma}_1 \sqrt{\widehat{\var}(sexTV)} = 0.29$
+    \end{itemize}
+  \item What is $\beta_2$?   
+    \begin{itemize}
+    \item From omitted variable bias formula, we know
+      \begin{align*}
+        \Er[\hat{\beta}_1^s] = & \beta_1 + \beta_2
+        \underbrace{\frac{\widehat{\cov}(sexTV,totalTV)}{\widehat{\var}(sexTV)}}_{=
+          \hat{\gamma}_1}
+        \\
+        = & \beta_1 + \beta_2 \hat{\gamma}_1 \\
+        \beta_2 = & \frac{\beta_1 -
+          \Er[\hat{\beta}_1^s]}{\hat{\gamma}_1} 
+      \end{align*}
+    \item so,
+      \begin{align*}
+        \hat{\hat{\beta}}_2 = & \frac{\hat{\beta}_1 -
+          \hat{\beta}_1^s}{\hat{\gamma}_1} \\
+        = & \frac{(\hat{\beta}_1 -
+          \hat{\beta}_1^s)
+          \sqrt{\widehat{\var}(sexTV)}}{\hat{\gamma}_1
+          \sqrt{\widehat{\var}(sexTV)}} \\
+        = & \frac{0.30 - 0.18}{0.29} \\
+        = & -0.41
+      \end{align*}
+    \end{itemize}
+  \end{itemize}  
+\end{frame}
+
+\section{Interpretation}
+\begin{frame}
+  \frametitle{Multiple linear regression model}
+  \begin{align*}
+    y_i = \beta_0 + \beta_1 x_{1,i} + \beta_2 x_{2,i} + \cdots +
+    \beta_k x_{k,i} + \epsilon_i 
+  \end{align*}
+  As in bivariate regression, let's assume:
+  \begin{enumerate}
+  \item[MLR.1] (linear model) 
+  \item[MLR.2] (independence) $\{(x_{1,i},x_{2,i},y_i)\}_{i=1}^n$ is independent random
+    sample
+  \item[MLR.3] (rank condition) no multicollinearity 
+  \item[MLR.4] (exogeneity) $\Er[\epsilon | x_{1,i}, x_{2,i}, ..., x_{k,i}] = 0$
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Interpretation of coefficients}
+  \begin{itemize}
+  \item $\beta_j$ is partial (marginal) effect of $x_j$ on $y$
+    \[ \beta_j = \frac{\partial y_i}{\partial x_{j,i}} \]
+  \item  $\beta_j$ is partial (marginal) effect of 
+    $\Er[y|x_1,...,x_k]$ 
+    \[ \beta_j = \frac{\partial \Er[y|x_1,...,x_k] }{\partial x_j} \]
+  \item Other regressors are held constant 
+    \[ \Delta y_i = \beta_0 + \beta_1 \Delta x_{1,i} + \beta_2 x_{2,i} + \cdots +
+    \beta_k x_{k,i} + \epsilon_i \]    
+    $\beta_1$ is the {\slshape{ceteris paribus}} effect of $x_{1,i}$
+    on $y_i$
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Changing more than one regressor simultaneously}
+  \begin{itemize}
+  \item Sometimes it does not make sense to change $x_j$ without also
+    changing $x_k$
+  \item Example: age-earnings profile
+    \[ \log wage_i = \beta_0 + \beta_1 age_i + \beta_2 age_i^2 +
+    \epsilon_i \]
+    \begin{itemize}
+    \item Cannot $age$ while holding $age^2$ constant
+    \item Instead should report marginal effect
+      \[ \frac{\partial \log wage_i}{\partial age_i}|_{age_i = a} = \beta_1 +
+      2\beta_2 a \]
+      or average marginal effect
+      \[ \overline{\frac{\partial \log wage_i}{\partial age_i}} =
+      \beta_1 + 2\beta_2 \overline{age} \]
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Changing more than one regressor simultaneously}
+  \begin{itemize}
+  \item Example: \cite{chandra2008} effect of exposure to sexual content on
+    television on teen pregnancy
+    \[ preg = \beta_0 + \beta_1 sexTV + \beta_2 totalTV + \epsilon \]
+    \begin{itemize}
+    \item $sexTV =$ hours of television with sexual content
+    \item $totalTV=$ hour of television
+    \item Should we care about $\beta_1$, $\beta_2$, or some
+      combination? 
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \includegraphics[keepaspectratio=true,width=1\textwidth]{chandra1}
+
+\end{frame}
+
+\begin{frame}
+  \includegraphics[keepaspectratio=true,width=1\textwidth]{chandra2}
+
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{OLS estimation}
+
+\begin{frame}[allowframebreaks]
+  \frametitle{OLS estimation}
+  \begin{align*}
+    (\hat{\beta}_0, ..., \hat{\beta}_k) = \argmin_{b_0, ..., b_k}
+    \sumin (y_i - b_0 - b_1 x_{1,i} - \cdots - b_k x_{k,i})^2 
+  \end{align*}
+  \begin{itemize}
+  \item First order conditions:
+    \begin{align*}
+      \sumin & \left(y_i - \hat{\beta}_0 - \hat{\beta}_1 x_{1,i} -
+        \cdots - \hat{\beta}_k x_{k,i} \right) & & = 0 \\
+      \sumin & \left(y_i - \hat{\beta}_0 - \hat{\beta}_1 x_{1,i} -
+        \cdots - \hat{\beta}_k x_{k,i} \right) &x_{1,i} & = 0 \\
+      \vdots & & \vdots  & =  \vdots \\
+      \sumin & \left(y_i - \hat{\beta}_0 - \hat{\beta}_1 x_{1,i} -
+        \cdots - \hat{\beta}_k x_{k,i} \right) &x_{k,i} & = 0 
+    \end{align*}
+    or with $\hat{\epsilon}_i = \left(y_i - \hat{\beta}_0 -
+      \hat{\beta}_1 x_{1,i} - \cdots - \hat{\beta}_k x_{k,i} \right)$,
+    \begin{align*}
+      \sumin \hat{\epsilon}_i = & 0 \\
+      \sumin \hat{\epsilon}_i x_{j,i} = & 0 \text{ for } j=1,2,...,k
+    \end{align*}
+  \item We choose $\hat{\beta}_0, ..., \hat{\beta}_k$ so that
+    residuals and regressors are uncorrelated (orthogonal)
+  \item First order conditions are a system of linear equations in
+    $\hat{\beta}_0, ..., \hat{\beta}_k$
+  \end{itemize}
+
+\end{frame}
+
+The first order conditions are a system of linear equations in
+$\hat{\beta}_0, ..., \hat{\beta}_k$. It is possible to write down an
+explicit algebraic expression for the $\hat{\beta}_j$, but it would be
+quite complicated and not very useful.\footnote{If you have taken
+  linear algebra and are comfortable working with matrices, then you
+  can write the OLS coefficients in a not too complicated way. (If you
+  are not familiar with matrices, then you can safely ignore this
+  footnote). Let $X$ be an $n \times (k+1)$ matrix where the first
+  column are all ones and the $i$th, $j$th for entry for $j>1$ is
+  $x_{j-1,i}$. Let $Y$ be an $n \times 1$ vector consisting of the
+  $y_i$, and let $\hat{\beta}$ be $(k+1) \times 1$.  Then the first
+  order conditions can be written as $X'(Y - X \hat{\beta}) =
+  0$.
+  Solving for $\hat{\beta}$ we have $\hat{\beta} = (X'X)^{-1}
+  (X'Y)$. } 
+
+\section{Partitioned regression}
+
+Although a completely explicit solution to the first order conditions
+is complicated, it is possible to write a recursive formula for
+$\hat{\beta}_j$. This approach is called partitioned regression or
+partialling out. It will be useful in proofs and for thinking about
+bias in multiple regression.
+
+\begin{frame}
+  \frametitle{Partitioned regression}
+  \begin{itemize}
+  \item A useful representation of $\hat{\beta}_j$ (e.g.\ $j=1$)
+    \begin{itemize}
+    \item Regress $x_{1,i}$ on other regressors
+      \[ x_{1,i} = \hat{\gamma}_0 + \hat{\gamma}_2 x_{2,i} + \cdots +
+      \hat{\gamma}_k x_{k,i} + \tilde{x}_{1,i} \]
+      where $\tilde{x}_{1,i}$ is the OLS residual
+    \item Then 
+      \[ \hat{\beta}_1 = \frac{\sumin \tilde{x}_{1,i} y_i}{\sumin
+        \tilde{x}_{1,i}^2} \]
+    \item Note that $\avg \tilde{x}_{1,i} = 0$, so $\hat{\beta}_1 = $
+      slope coefficient from regressing $y$ on $\tilde{x}_1$
+    \end{itemize}
+  \end{itemize}
+
+\end{frame}
+
+Partitioned regression gives a recursive formula for $\hat{\beta}_1$
+in that it involves the residuals from the regression of $x_{1,i}$ on
+the other $x$'s. This is itself a multiple regression. However, it is
+a multiple regression with one less independent variable. We could
+apply partitioned regression again to calculate the
+$\hat{\gamma}$'s. At some point the first step of
+partitioned regression would just involve a single independent
+variable and we'd be done. For example, with $k=3$, we can say 
+\[ \hat{\beta}_1 = \frac{\sumin \tilde{x}_{1,i} y_i}{\sumin
+  \tilde{x}_{1,i}^2} \]
+where $\tilde{x}_{1,i}$ are the residuals from 
+\[ x_{1,i} = \hat{\gamma}_0 + \hat{\gamma}_2 x_{2,i} + \hat{\gamma}_3
+x_{3,i} + \tilde{x}_{1,i}. \] 
+Now, using partitioned regression again, we can say that
+\[ \hat{\gamma}_2 = \frac{\sumin \tilde{\tilde{x}}_{2,i} x_{1,i}}{\sumin
+  \tilde{\tilde{x}}_{2,i}^2} \]
+where $\tilde{\tilde{x}}_{2,i}$ are residuals from 
+\[ x_{2,i} = \hat{\delta}_0 + \hat{\delta}_3 x_{3,i} +
+\tilde{\tilde{x}}_{2,i} \]
+and 
+\[ \hat{\delta}_3 = \frac{\sumin (x_{3,i} - \bar{x}_3) y_i}{\sumin
+  (x_{3,i} - \bar{x}_3)^2}. \]
+In practice, we rarely need to write down or work with all the steps
+back in the recursion, but it is important to understand that
+partitioned regression completely describes how to calculate the
+$\hat{\beta}_j$. 
+
+To show that partitioned regression works, we need to show that it
+gives the same $\hat{\beta}_1$ as the OLS first order conditions. 
+
+\begin{frame}\frametitle{Proof outline}
+  \begin{itemize}
+  \item Substitute $y_i = \hat{\beta}_0 + \hat{\beta}_1 x_{1,i} +
+    \cdots + \hat{\beta}_k x_{k,i} + \hat{\epsilon}_i$ into
+    $\frac{\sumin \tilde{x}_{1,i} y_i}{\sumin
+      \tilde{x}_{1,i}^2}$ 
+  \item Use the following facts to simplify:
+    \begin{enumerate}
+    \item $\sumin \tilde{x}_{1,i} = 0 $
+    \item $\sumin \tilde{x}_{1,i} x_{j,i} = 0$ for $j=2,...,k$
+    \item $\sumin \tilde{x}_{1,i} x_{1,i} = \sumin \tilde{x}_{1,i}^2$
+    \item $\sumin \tilde{x}_{1,i} \hat{\epsilon}_i = 0$
+    \end{enumerate}
+  \item See handout version of slides for details
+  \end{itemize}
+
+\end{frame}
+
+\begin{proof}
+  To begin with let's assume the 4 facts are true. If we substitute
+  $y_i = \hat{\beta}_0 + \hat{\beta}_1 x_{1,i} + \cdots +
+  \hat{\beta}_k x_{k,i} + \hat{\epsilon}_i$ into the partitioned
+  regression formula we have
+  \begin{align*}
+    \frac{\sumin \tilde{x}_{1,i} y_i } { \sumin \tilde{x}_{1,i}^2} 
+    = &
+        \frac{\sumin \tilde{x}_{1,i} \left( \hat{\beta}_0 + \hat{\beta}_1 x_{1,i} + \cdots +
+        \hat{\beta}_k x_{k,i} + \hat{\epsilon}_i \right) } { \sumin
+        \tilde{x}_{1,i}^2} \\
+    & \text{ distributing and rearranging} \\
+    = & 
+        \hat{\beta}_0 \frac{\sumin \tilde{x}_{1,i}} { \sumin
+        \tilde{x}_{1,i}^2} + \hat{\beta}_1 \frac{\sumin
+        \tilde{x}_{1,i} x_{1,i}} { \sumin
+        \tilde{x}_{1,i}^2} + \hat{\beta}_2 \frac{\sumin
+        \tilde{x}_{1,i} x_{2,i}} { \sumin
+        \tilde{x}_{1,i}^2}  + \cdots + \hat{\beta}_k \frac{\sumin
+        \tilde{x}_{1,i} x_{k,i}} { \sumin
+        \tilde{x}_{1,i}^2} + \frac{\sumin
+        \tilde{x}_{1,i} \hat{\epsilon}_i} { \sumin
+        \tilde{x}_{1,i}^2} \\
+    & \text{ using the 4 facts } \\
+    = & \hat{\beta}_1
+  \end{align*}
+  Now, we just need to show the 4 facts. 
+
+  The $\tilde{x}_{1,i}$ are residuals from 
+  \[ x_{1,i} = \hat{\gamma}_0 + \hat{\gamma}_2 x_{2,i} + \cdots +
+  \hat{\gamma}_k x_{k,i} + \tilde{x}_{1,i}. \]
+  The first order conditions for this regression are
+  \begin{align*}
+    \sumin \tilde{x}_{1,i} = & 0 \\
+    \sumin \tilde{x}_{1,i} x_{2,i} = & 0 \\
+    \vdots & = \vdots \\
+    \sumin \tilde{x}_{1,i} x_{k,i} = & 0.
+  \end{align*}
+  This is exactly facts 1 and 2. 
+
+  Fact 3 comes from
+  \begin{align*}
+    \sumin \tilde{x}_{1,i} x_{1,i} 
+    = & \sumin \tilde{x}_{1,i} \left(\hat{\gamma}_0 + \hat{\gamma}_2 x_{2,i} + \cdots +
+  \hat{\gamma}_k x_{k,i} + \tilde{x}_{1,i} \right) \\
+    =  &\hat{\gamma}_0 \sumin\tilde{x}_{1,i} + \hat{\gamma}_2
+         \sumin\tilde{x}_{1,i} x_{2,i} + \cdots + \hat{\gamma}_k
+         \sumin\tilde{x}_{1,i} x_{k,i} + 
+         \sumin\tilde{x}_{1,i} \tilde{x}_{1,i} \\
+    & \text{ using facts 1 and 2} \\
+    = &  \sumin\tilde{x}_{1,i}^2.
+  \end{align*}
+  
+  Finally, since $\hat{\epsilon}_i$ are residuals from regressing $y$
+  on the $x$'s, we have
+  \[ 0 = \sumin \hat{\epsilon}_i = \sumin \hat{\epsilon}_i x_{1,i} =
+  \cdots = \sumin \hat{\epsilon}_i x_{k,i}. \]
+  Therefore,
+  \begin{align*}
+    \sumin \tilde{x}_{1,i} \hat{\epsilon}_{i} 
+    = & \sumin \left(x_{1,i} - \hat{\gamma}_0 - \hat{\gamma}_2 x_{2,i} - \cdots -
+        \hat{\gamma}_k x_{k,i} \right) \hat{\epsilon}_i \\
+    = & \sumin x_{1,i} \hat{\epsilon}_i  - \hat{\gamma}_0 \sumin
+        \hat{\epsilon}_i- \hat{\gamma}_2 \sumin
+        \hat{\epsilon}_i x_{2,i} - \cdots -
+        \hat{\gamma}_k \sumin
+        \hat{\epsilon}_i x_{k,i} \\
+    = & 0,
+  \end{align*}
+  which shows fact 4.
+\end{proof}
+
+\begin{frame}\frametitle{``Partialling out''}
+  \[ \hat{\beta}_1 = \frac{\sumin \tilde{x}_{1,i} y_i}{\sumin
+    \tilde{x}_{1,i}^2} \]
+  \begin{enumerate}
+  \item Regress $x_1$ against the other controls (regressors) and keep
+    the residuals $\tilde{x}_1$, which is the ``part'' of $x_1$ that
+    is uncorrelated with the other regressors
+  \item Regress $y$ against $\tilde{x}_1$
+  \end{enumerate}
+  $\hat{\beta}_1$ measures the effect of $x_1$ after the effects of
+  $x_2, ... , x_k$ have been partialled out
+
+\end{frame}
+$\tilde{x}_{1,i}$ is the part of $x_{1,i}$ that is uncorrelated with
+the other regressors. This is another way of seeing that multiple
+regression gives the relationship between $x_1$ and $y$ holding the
+other $x$'s constant. The multiple regression slope coefficient, 
+\[ \hat{\beta}_1 = \frac{\sumin \tilde{x}_{1,i} y_i}{\sumin
+    \tilde{x}_{1,i}^2}, \]
+looks at the covariance of $y$ with the part of $x_{1,i}$ that is
+uncorrelated with the other $x$'s. In contrast, the short regression
+coefficient
+\[ \hat{\beta}^s_1 = \frac{\sumin (x_{1,i} - \bar{x}_1) y_i}{\sumin
+    (x_{1,i} - \bar{x}_1)^2}, \]
+looks at the covariance of $y$ with all of $x_{1,i}$, some of which
+may be related to the other $x$'s. 
+
+
+\subsection{Example: California test scores}
+\begin{frame}[shrink,fragile]
+  \frametitle{Example: California test scores and student teacher
+    ratios} 
+\begin{lstlisting}
+## long regression
+summary(lm(testscr ~ str + avginc + calw_pct + meal_pct + el_pct, data=ca))
+## partialling out
+tilde.str <- residuals(lm(str ~ avginc + calw_pct + meal_pct + el_pct,
+                          data=ca))
+mean(tilde.str) ## should be 0
+cov(tilde.str, ca$avginc) ## should be 0
+sum(tilde.str*ca$str) 
+sum(tilde.str^2) ## should equal previous line
+
+## should equal long regression coefficient
+cov(tilde.str, ca$testscr)/var(tilde.str) 
+sum(tilde.str*ca$testscr)/sum(tilde.str^2)
+
+## =long regression coefficient, but wrong standard error
+summary(lm(ca$testscr ~ tilde.str))
+\end{lstlisting}  
+
+\end{frame}
+
+% add: using covariance matrix to interpret changes
+% next: statistical properties $
+
+\section{Example: \cite{bronnenberg2009}}
+\begin{frame}[shrink]\frametitle{Example: \cite{bronnenberg2009}}
+  \begin{itemize}
+  \item Looks at market shares of brands of consumer packaged goods (CPG) across
+    markets and time 
+    \begin{itemize}
+    \item CPG $=$ beer, coffee, ketchup, etc.
+    \end{itemize}
+  \item Market shares from AC Nielsen scanner data
+    \begin{itemize}
+    \item This type of data has been used very frequently in IO during
+      the last decade
+    \item AC Nielsen distributes bar code scanners to a sample of
+      consumers, consumers record every purchase by scanning bar codes
+    \item 4-week intervals, June 1992-May 1995
+    \end{itemize}
+  \item Results
+    \begin{itemize}
+    \item Market shares variable across geographic markets, but
+      persistent over time within each market
+    \item Geographic market shares strongly correlated with first mover
+      advantage 
+      \begin{itemize}
+      \item e.g.\ Miller (founded in Milwaukee) most popular beer in
+        Milwaukee, Budweiser (founded in St. Louis) most popular beer
+        in St.\ Louis 
+      \end{itemize}
+    \end{itemize}    
+  \end{itemize}
+
+\end{frame}
+
+\begin{frame}
+  \includegraphics[keepaspectratio=true,width=1\textwidth]{bdd3}
+
+\end{frame}
+
+\begin{frame}
+  \includegraphics[keepaspectratio=true,width=1\textwidth]{bdd4}
+
+\end{frame}
+
+\begin{frame}
+  \[ share_{im} = \beta_0 + \beta_1 \underbrace{brandA_{im}}_{=1
+    \text{ if good $i$ is brand A}} + \beta_2
+  \underbrace{earlyEntry_{im}}_{=1 \text{ if good $i$ entered $m$
+      first}} + \epsilon_{im}\]
+  \includegraphics[keepaspectratio=true,width=1\textwidth]{bdd6}
+
+\end{frame}
+
+\begin{frame}[allowframebreaks]\frametitle{}
+  \begin{itemize}
+  \item How are results in the three columns for beer related?
+    \begin{align*}
+      \hat{\beta}_1^s = \frac{\sumin (x_{1,i} - \bar{x}_1) y_i}{\sumin
+        (x_{1,i} - \bar{x}_1)^2}
+    \end{align*} 
+  \item Substitute $y_i = \hat{\beta}_0 + \hat{\beta}_1 x_{1,i} +
+    \hat{\beta}_2 x_{2,i} + \hat{\epsilon}_i$ 
+    \begin{align*}
+      \hat{\beta}_1^s = & \frac{\sumin (x_{1,i} - \bar{x}_1) (\hat{\beta}_0 + \hat{\beta}_1 x_{1,i} +
+        \hat{\beta}_2 x_{2,i} + \hat{\epsilon}_i) }{\sumin
+        (x_{1,i} - \bar{x}_1)^2} \\
+      = & \frac{\hat{\beta}_0 \overbrace{\left(\sumin x_{1,i} -
+            \bar{x}_1\right) }^{=0} + \hat{\beta}_1 \left(\sumin (x_{1,i}
+          - \bar{x}_1)x_{1,i} \right)}       {\sumin (x_{1,i} -
+        \bar{x}_1)^2} + \\ 
+      & + \frac{\hat{\beta}_2 \left(\sumin (x_{1,i}
+          - \bar{x}_1)x_{2,i} \right)} {\sumin (x_{1,i} -
+        \bar{x}_1)^2} + \\  
+      & + \frac{\overbrace{\left(\sumin x_{1,i}  \hat{\epsilon}_i\right)}^{=0 \text{FOC}} - 
+        \overbrace{\left(\bar{x}_1 \sumin \hat{\epsilon}_{1,i}\right)}^{=0
+          \text{FOC}}} 
+      {\sumin (x_{1,i} - \bar{x}_1)^2}      
+    \end{align*}
+  \item 
+    \begin{align*}
+      \hat{\beta}_1^s = & \hat{\beta}_1 + \hat{\beta}_2
+      \frac{\widehat{\cov}(x_1,x_2)} {\widehat{\var}(x_1)} \\
+      = & \hat{\beta}_1 + \hat{\beta_2} \hat{\gamma}^2_1
+    \end{align*}
+    where $\hat{\gamma}^2_1$ is coefficient on $x_1$ in a regression of
+    $x_2$ on $x_1$
+  \item ``Short $(\hat{\beta}_1^s)$ equals long $(\hat{\beta}_1)$ plus
+    the effect of omitted $(\hat{\beta}_2)$ times the 
+    regression of the omitted on the included $(\hat{\gamma}^2_1)$'' \citep{ap2009}
+  \item Similarly,
+    \[
+    \hat{\beta}_2^s = \hat{\beta}_2 + \hat{\beta}_1
+    \underbrace{\hat{\gamma}_2^1}_{ =\frac{\widehat{\cov}(x_1,x_2)}
+      {\widehat{\var}(x_1)}}
+    \]
+  \end{itemize}
+
+\end{frame}
+
+This formula is nearly identical to omitted variables bias. Omitted
+variables bias is about the $\Er[\hat{\beta}_1^s]$ and involves
+population regression coefficients. It is that  
+\[
+\Er[\hat{\beta}_2^s|X] = \beta_2 + \beta_1
+{\widehat{\cov}(x_1,x_2)}{\widehat{\var}(x_1)}.
+\]
+We just the similar fact that 
+\[
+\hat{\beta}_2^s = \hat{\beta}_2 + \hat{\beta}_1
+\underbrace{\hat{\gamma}_2^1}_{ =\frac{\widehat{\cov}(x_1,x_2)}
+  {\widehat{\var}(x_1)}}.
+\]
+The former follows from the later by taking expectations conditional
+on $X$ and assuming our usual four regression assumptions so that
+$\Er[\hat{\beta}_j|X] = \beta_j$.
+
+\begin{frame}
+  \begin{itemize}
+  \item In this example, $\hat{\beta}_{bud}^s = 0.118$,
+    $\hat{\beta}_{entry}^s = 0.134$, $\hat{\beta}_{bud} = 0.020$, and
+    $\hat{\beta}_{entry} = 0.117$, so
+    \begin{align*}
+      \frac{\widehat{\cov}(bud,entry)}
+      {\widehat{\var}(entry)} = & \frac{\hat{\beta}_{entry}^s -
+        \hat{\beta}_{entry}} {\hat{\beta}_{bud}} \\
+      = & \frac{0.134 - 0.117}{0.02} = 0.85 \\
+      \frac{\widehat{\cov}(bud,entry)}
+      {\widehat{\var}(bud)} = & \frac{\hat{\beta}_{bud}^s -
+        \hat{\beta}_{bud}}{\hat{\beta}_{entry}} \\
+      = & \frac{0.118 - 0.02}{0.17} = 0.84 
+    \end{align*}          
+  \end{itemize}
+
+\end{frame}
+
+\begin{frame}[allowframebreaks]
+  \frametitle{References}
+\bibliographystyle{jpe}
+\bibliography{../326}
+\end{frame}
+  
+
+\end{document}

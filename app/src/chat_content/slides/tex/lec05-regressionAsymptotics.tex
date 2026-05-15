@@ -1,0 +1,590 @@
+\title{OLS Asymptotics}
+\author{Paul Schrimpf} 
+\institute{UBC \\ Economics 326} 
+\date{\today}
+
+\graphicspath{{figures/}}
+
+\begin{document}
+
+\frame{\titlepage}
+%\setcounter{tocdepth}{2}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}
+  \tableofcontents  
+\end{frame}
+
+\begin{frame}
+  \frametitle{References}
+  \begin{itemize}
+  \item \cite{w2013} chapter 5
+  \item \cite{sw2009} chapter 18
+  \item \cite{ap2014} appendix of chapter 2 
+  \item Review of asymptotics
+    \begin{itemize}
+    \item \cite{w2013} appendix C
+    \item \cite{menzel2009}
+      especially VI-IX
+    \end{itemize}    
+  \end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Motivation}
+
+\begin{frame}\frametitle{Motivation}
+  \begin{itemize}
+  \item Our six regression assumptions,
+    \begin{enumerate}
+    \item[MLR.1] (linear model) 
+    \item[MLR.2] (independence) $\{(x_{1,i},x_{2,i},y_i)\}_{i=1}^n$ is
+      an independent random sample
+    \item[MLR.3] (rank condition) no multicollinearity: no $x_{j,i}$ is
+      constant and there is no exact linear relationship among the $x_{j,i}$
+    \item[MLR.4] (exogeneity) $\Er[\epsilon_i | x_{1,i},..., x_{k,i}]
+      = 0$
+    \item[MLR.5] (homoskedasticity) $\var(\epsilon_i | X) =
+      \sigma^2_\epsilon$
+    \item[MLR.6] $\epsilon_i |X \sim N(0,\sigma_\epsilon^2)$
+    \end{enumerate}
+    especially MLR.6 (and to a lesser extent MLR.1 and MLR.4) are often
+    implausible 
+  \item Requiring OLS to only be consistent instead of unbiased will
+    let us relax MLR.1 and MLR.4
+  \item We will use the Central limit theorem to relax assumption
+    MLR.6 and still perform inference ($t$-tests and $F$-tests) 
+  \end{itemize}
+\end{frame}
+
+\begin{frame}\frametitle{Review of asymptotic inference}
+  \begin{itemize}
+  \item Idea: use limit of distribution of estimator as $N \to \infty$ 
+    to approximate finite sample distribution of estimator 
+  \item Notation:
+    \begin{itemize}
+    \item Sequence of samples of increasing size $n$, $S_n = \{(y_1,x_1),
+      ..., (y_n,x_n)\}$
+    \item Estimator for each sample $\hat{\theta}$ (implicitly depends
+      on $n$)
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\section{Consistency}
+
+\begin{frame}
+  \frametitle{Review of convergence in probability}
+  \begin{itemize}
+  \item $\hat{\theta}$ \alert{converges in probability} to $\theta$ if for every
+    $\epsilon > 0$, 
+    \[ \lim_{n \to \infty} \Pr\left( \abs{\hat{\theta} - \theta} > \epsilon
+    \right) = 0 \]
+    denote by $\plim \hat{\theta} = \theta$ or $\hat{\theta} \inprob \theta$
+  \item Show using a \alert{law of large numbers}: if
+    $y_1, ..., y_n$are i.i.d. with mean $\mu$; or if $y_1, ..., y_n$
+    have finite expectations and
+    $\lim_{n \to \infty} \frac{1}{n^2}\sum_{i=1}^n \var(y_i) = 0$ is
+    finite, then $ \bar{y} \inprob \Er[Y]$
+  \item Properties:
+    \begin{itemize}
+    \item $\plim g(\hat{\theta}) = g(\plim \hat{\theta})$ if $g$ is continuous
+      (\alert{continuous mapping theorem (CMT)})
+    \item If $\hat{\theta} \inprob \theta$ and $\hat{\zeta} \inprob \zeta$, then
+      (\alert{Slutsky's lemma})
+      \begin{itemize} 
+      \item $\hat{\theta} + \hat{\zeta} \inprob \theta + \zeta$
+      \item $\hat{\theta} \hat{\zeta} \inprob \theta \zeta$
+      \item $\frac{\hat{\theta}}{\hat{\zeta}} \inprob \frac{\theta}{\zeta}$
+      \end{itemize}
+    \end{itemize}
+  \item $\hat{\theta}$ is a \alert{consistent} estimate of $\theta$ if $\hat{\theta}
+    \inprob \theta$
+  \end{itemize}
+\end{frame}
+
+A law of large numbers gives conditions such that
+$\bar{y} \inprob \Er[Y]$. For this course, you do not need to worry
+about the conditions needed to make a law of large numbers hold. You
+can just always assume that $\bar{y} \inprob \Er[Y]$. However, in case
+you're curious, the remainder of this paragraph will go into more detail.
+The simplest law of large numbers (called
+Khinchine's law of large numbers) says that if $y_i$ are iid with
+$\Er[Y]$ finite, then $\bar{y} \inprob \Er[Y]$. The assumption that
+$y_i$ are iid can be relaxed if more assumptions are made about the
+moments of $y_i$. The ``or'' part of the bullet above is called
+Chebyshev's law of large numbers. It says that if $y_i$ are
+independent (but not necessarily identically distributed), $\Er[y_i] = \mu_i
+< \infty$ for all $i$, and $\lim_{n \to \infty}
+\frac{1}{n^2}\sum_{i=1}^n \var(y_i) = 0$, then $\plim (\bar{y}_n -
+\avg \mu_i) = 0$. In the next lecture, when we deal with
+heteroskedasticity, we will be using this law of large of
+numbers. There are also versions of the law of large numbers for when
+$y_i$ are not independent. 
+
+
+\begin{frame}[allowframebreaks]
+  \frametitle{Consistency of OLS}
+  \begin{itemize}
+  \item Bivariate regression of $y$ on $x$
+  \item Slope:
+    \[ \hat{\beta}_1 = \frac{\sumin (x_i - \bar{x}) y_i }
+    {\sumin (x_i  - \bar{x})^2} 
+    = \frac{\avg (x_i - \bar{x}) y_i }
+    {\avg (x_i  - \bar{x})^2}  \]
+  \item Working with the numerator:
+    \begin{align*}
+      \avg (x_i - \bar{x}) y_i = & \left( \avg x_i y_i \right) - \bar{x} \avg y_i \\
+      = &\left( \avg x_i y_i \right) - \left(\avg x_i \right)
+      \left(\avg y_i \right) \\
+      & \text{using LLN} \\
+      \inprob & \Er[xy] - \Er[x]\Er[y] = \cov(x,y) 
+    \end{align*}
+  \item Similarly
+    \[ {\avg (x_i  - \bar{x})^2} \inprob \var(x) \]
+  \item Then by Slutsky's lemma, $\hat{\beta}_1 \inprob
+    \frac{\cov(x,y)}{\var(x)}$
+  \item Recall that $\frac{\cov(x,y)}{\var(x)}$ is equal to the
+    population regression coefficient
+    \begin{itemize}
+    \item The bivariate \alert{population regression} of $Y$ on $X$ is 
+      \[ (\beta_0, \beta_1) = \argmin_{b_0,b_1} \Er[(Y - b_0 - b_1
+      X)^2 ] \] 
+      i.e. $\beta_1 = \frac{\cov(x,y)}{\var(x)}$ and $\beta_0 = \Er[y]
+      - \beta_1 \Er[x]$
+    \end{itemize}
+  \item Thus, OLS consistently estimates the population regression
+    under very weak assumptions
+    \begin{itemize}
+    \item We only need to assume $\avg
+      x_i \inprob \Er[x]$, $\avg y_i \inprob \Er[y]$, $\avg x_i^2
+      \inprob \Er[x^2]$, and $\avg x_i y_i \inprob \Er[xy]$. There are
+      multiple versions of the law of large numbers that would make
+      this true. The details of LLNs are not important for this course,
+      so we will be slightly imprecise and say that this is true
+      assuming $x_i$ and $y_i$ have finite second moments and are not
+      too dependent
+    \end{itemize}
+  \end{itemize}  
+
+  \begin{theorem}
+    Assume $y_i, x_{i1}, ..., x_{ik}$ have finite second moments and
+    observations are not too dependent then OLS consistently estimates
+    the population regression of $y$ on $x_1$, ..., $x_k$
+  \end{theorem}
+
+  \begin{itemize}
+  \item Recall that the population regression is the minimal mean
+    square error linear approximation to the conditional expectation
+    function, i.e.\
+    {\footnotesize{
+    \begin{align*}
+      \underbrace{\argmin_{b_0, b_1} \Er\left[\left(Y-(b_0 + b_1
+          X)\right)^2\right]}_{\text{population regression}} =
+      \argmin_{b_0, b_1} \underbrace{\Er_X\left[\left(\Er[Y|X] - (b_0 + b_1
+          X)\right)^2\right]}_{\text{MSE of linear approximation to $\Er[Y|X]$}}
+    \end{align*}
+    }}
+  \item Population regression (and the conditional expectation
+    function) might not be (and often is not) the model you want to
+    estimate 
+  \item Population regression (and the conditional expectation
+    function) are not causal    
+  \item If we have a true linear model, 
+    \[ y_i  = \beta_0 + \beta_1 x_{1,i} + \cdots + \beta_k x_{k,i} + \epsilon_i \]
+    then OLS is consistent for $\beta_j$ if $\Er[\epsilon_i x_i] =0$
+    \begin{itemize}
+    \item $\Er[\epsilon_i x_i] =0$ is a weaker assumption than
+      $\Er[\epsilon_i | x_i ] = 0$.
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame} \frametitle{Example: nonlinear CEF: $\hat{\beta}$ biased
+    but consistent estimator of population regression}
+  \begin{center}
+    \includegraphics[width=0.6\textwidth]{nonlinear} 
+  \end{center} 
+  \href{https://bitbucket.org/paulschrimpf/econ326/src/master/notes/05/nonlinear.R?at=master} 
+  {Code}
+\end{frame}
+
+\begin{frame} \frametitle{Example: nonlinear CEF: $\hat{\beta}$ biased
+    but consistent estimator of population regression}
+  \begin{center}
+    \includegraphics[width=0.6\textwidth]{finiteBias} 
+  \end{center} 
+  \href{https://bitbucket.org/paulschrimpf/econ326/src/master/notes/05/nonlinear.R?at=master} 
+  {Code} 
+\end{frame}
+
+\begin{frame}\frametitle{When is OLS not consistent?}
+  \begin{itemize}
+  \item OLS is always a consistent estimator of the population
+    regression
+  \item OLS might not be consistent if the model we want to estimate
+    is not the population regression
+  \item Examples:
+    \begin{itemize}
+    \item Omitted variables: want to estimate
+      \[ y_i = \beta_0 + \beta_1 x_{1,i} + \beta_2 x_{2,i} +
+      \epsilon_i \]
+      but $x_{2,i}$ not observed, so estimate
+      \[ y_i = \beta_0^s + \beta_1^s x_{1,i} + u_i \]
+      instead
+    \item Causal effect: want slope to be the causal effect of $x$ on
+      $y$ 
+    \item Economic model: e.g.\ production function
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Asymptotic normality}
+
+\begin{frame}[allowframebreaks]\frametitle{Review of central limit theorem}
+  \begin{itemize}
+  \item Let $F_n$ be the CDF of $\hat{\theta}$ and $W$ be a random variable
+    with CDF $F$
+  \item $\hat{\theta}$ \alert{converges in distribution} to $W$, written $\hat{\theta} \indist
+    W$, if $\lim_{n \to \infty} F_n(x) = F(x)$ for all $x$ where $F$
+    is continuous 
+  \item \alert{Central limit theorem}: Let $\{y_1, ..., y_n\}$ be i.i.d.
+    with mean $\mu$ and variance $\sigma^2$ then $Z_n =
+    \sqrt{n}\left(\bar{y}_n - \mu\right)$ converges in distribution
+    to a $N(0,\sigma^2)$ random variable
+    \begin{itemize}
+    \item As with the LLN, the i.i.d. condition can be relaxed if
+      additional moment conditions are added; we will not worry too
+      much about the exact assumptions needed
+    \item For non-i.i.d.\ data, if $\Er[y_i] = \mu$ for all $i$ and $v
+      = \lim_{n \to \infty} 
+      \Er\left[ \left(\avg y_i - \mu \right)^2 \right]$ exists (and
+      some technical conditions are met) then 
+      \[ \sqrt{n}\left(\bar{y}_n - \mu \right) \indist N(0,v) \]
+    \end{itemize}
+  \item Properties:
+    \begin{itemize}
+    \item If $\hat{\theta} \indist W$, then $g(\hat{\theta}) \indist g(W)$ for
+      continuous $g$ (\alert{continuous mapping theorem (CMT)})
+    \item \alert{Slutsky's theorem}: If $\hat{\theta} \indist W$ and
+      $\hat{\zeta} \inprob c$, then (i) $\hat{\theta} + 
+      \hat{\zeta} \indist W + c$, (ii) $\hat{\theta} \hat{\zeta} \indist c W$, and (iii)
+      $\hat{\theta}/\hat{\zeta} \indist W/c$
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile,shrink]
+  \frametitle{Demonstration of CLT}
+  \begin{lstlisting}
+N <- c(1,2,5,10,20,50,100)
+simulations <- 5000
+means <- matrix(0,nrow=simulations,ncol=length(N))
+for(i in 1:length(N)) {
+  n <- N[i]
+  dat <- matrix(runif(n*simulations),
+                nrow=simulations, ncol=n)
+  means[,i] <- (apply(dat, 1, mean) - 0.5)*sqrt(n)
+}
+
+# Plotting
+df <- data.frame(means)
+df$n <- N
+df <- melt(df)
+cltPlot <- ggplot(data=df,aes(x=value,fill=variable)) +
+  geom_histogram(alpha=0.2, position="identity") +
+  scale_x_continuous(name=expression(sqrt(n)(bar(x)-mu))) +
+  scale_fill_brewer(type="div",palette="RdYlGn",
+                    name="N",label=N) 
+cltPlot   
+  \end{lstlisting} %$
+\end{frame}
+
+\begin{frame}
+  \frametitle{Demonstration of CLT}
+  \includegraphics[height=0.8\textheight]{../02/cltPlot}
+\end{frame}
+
+
+\begin{frame}[allowframebreaks]\frametitle{Asymptotic normality of OLS}
+  \begin{itemize}
+  \item Bivariate regression of $y$ on $x$
+  \item Slope:
+    \[ \hat{\beta}_1 = \frac{\sumin (x_i - \bar{x}) y_i }
+    {\sumin (x_i  - \bar{x})^2} 
+    = \frac{\avg (x_i - \bar{x}) y_i }
+    {\avg (x_i  - \bar{x})^2}  \]
+  \item Consider $\sqrt{n}(\hat{\beta}_1 - \beta_1)$, where $\beta_1$
+    is the population regression coefficient
+  \item Can always write $y$ in terms of the population regression
+    \[ y_i = \beta_0 + \beta_1 x_i + \epsilon_i \]
+    where by construction $\Er[\epsilon_i x_i] = 0$
+  \item Then,
+    \begin{align*}
+      \sqrt{n}(\hat{\beta}_1 - \beta_1) = & \sqrt{n} \left( \frac{\avg (x_i - \bar{x}) y_i }
+        {\avg (x_i  - \bar{x})^2} - \beta_1 \right) \\
+      = & \sqrt{n}\left(  \frac{\avg (x_i - \bar{x}) (\beta_0 +
+          \beta_1 x_i + \epsilon_i) }
+        {\avg (x_i  - \bar{x})^2} - \beta_1 \right) \\
+      = & \frac{\sqrt{n} \avg (x_i - \bar{x}) \epsilon_i} {\avg (x_i -
+        \bar{x})^2} 
+    \end{align*}
+  \item Already showed that $\avg (x_i - \bar{x})^2 \inprob \var(x)$
+  \item Need to apply CLT to $\sqrt{n} \avg (x_i - \bar{x})
+    \epsilon_i$
+    \begin{itemize}
+    \item $\Er[ (x_i - \bar{x}) \epsilon_i ] = 0$
+    \item With homoskedasiticity,
+      \begin{align*}
+        \var\left( (x_i - \bar{x}) \epsilon_i \right) = & \Er \left[
+          \var\left( (x_i - \bar{x}) \epsilon_i | x \right) \right] + 
+        \var \left( \underbrace{\Er[(x_i - \bar{x}) \epsilon_i |
+            x]}_{=0} \right) \\
+        = & \Er\left[ (x_i - \bar{x})^2 \sigma_\epsilon^2 \right] \\
+        \approx & \var(x) \sigma_\epsilon^2
+      \end{align*}
+    \item Can conclude that
+      \[ \frac{1}{\sqrt{n}} \sumin (x_i - \bar{x}) \epsilon_i \indist
+      N(0, \var(x) \sigma_\epsilon^2) \]
+    \end{itemize}
+  \item By Slutsky's theorem,
+    \begin{align*}
+      \sqrt{n}(\hat{\beta}_1 - \beta_1) = & \frac{\sqrt{n} \avg (x_i - \bar{x}) \epsilon_i} {\avg (x_i -
+        \bar{x})^2} \\
+      \indist & N\left(0, \frac{\sigma_\epsilon^2}{\var(x)} \right)
+    \end{align*}
+    or equivalently,
+    \[ \frac{\hat{\beta}_1 - \beta_1} {
+      \sqrt{\frac{\sigma_\epsilon^2}{n \var(x)}} } \indist N(0,1) \]    
+  \item Again by slutsky's lemma can replace $\sigma_\epsilon^2$ and
+    $\var(x)$ by consistent estimators, and
+    \begin{align*}
+      \frac{\hat{\beta}_1 - \beta_1}
+      {\sqrt{\frac{\hat{\sigma}^2_\epsilon}{\sumin (x_i -
+            \bar{x})^2}}} \indist N(0,1) 
+    \end{align*}
+    i.e.\ usual $t$-statistic is asymptotically normal 
+  \item Similar reasoning applies to multivariate regression
+  \end{itemize}
+\end{frame}
+
+\begin{frame}  
+  \begin{theorem}
+    Assume MLR.1-3, MLR.5, and MLR.4': $\Er[\epsilon_i
+    x_{i,j}] = 0 \forall j$, then OLS is asymptotically normal with 
+    \[ \sqrt{n} \begin{pmatrix} \hat{\beta}_0 - \beta_0 \\ \vdots \\ 
+      \hat{\beta}_k - \beta_k
+    \end{pmatrix} \indist N\left(0, \Sigma \right) \]
+    and in particular
+    \[ \frac{\hat{\beta}_j - \beta_j} 
+    {\sqrt{\frac{\hat{\sigma}^2_\epsilon}{\sumin \tilde{x}_{ji}^2}}}
+    \indist N(0,1)  \]
+  \end{theorem}  
+\end{frame}
+
+\begin{frame}\frametitle{Demonstration}
+  \includegraphics[height=0.8\textheight]{cltPlot-ols} \\
+    \href{https://bitbucket.org/paulschrimpf/econ326/src/master/notes/05/clt-ols.R?at=master} 
+    {Code} 
+\end{frame}
+
+\subsection{Large sample inference}
+
+\begin{frame}[allowframebreaks]\frametitle{Large sample inference}
+  \begin{itemize}
+  \item OLS asymptotically normal $\Rightarrow$ in large sample we can
+    use the usual $t$ and $F$ statistics for inference without
+    assuming $\epsilon_i | X \sim N$
+  \item E.g.\ test $H_0: \beta_j = \beta_j^*$ against $H_a: \beta_j
+    \neq \beta_j^*$ at significance level $\alpha$ in 
+    \[ y_i = \beta_0 + \beta_1 x_{1,i} + \cdots + \beta_k x_{k,i} + 
+    \epsilon_i \]
+    assuming MLR.1-3, MLR.4', and MLR.5 
+    \begin{itemize}
+    \item $t$-statistic:
+      \[ \hat{t} = \frac{\hat{\beta}_j - \beta_j^*}
+      {\sqrt{\frac{\hat{\sigma}^2_\epsilon}{\sumin \tilde{x}_{ji}^2}}} 
+      \indist N(0,1)  \]
+    \item p-value:
+      \[ p = \Pr(|t| \geq |\hat{t}|) = 2 \Phi(-|\hat{t}|) \]
+      \begin{itemize}
+      \item Since $\lim_{n \to \infty} F_{t, n - k-1}(x) = \Phi(x)$ it
+        is also valid to use $t$-distribution CDF instead of normal
+        distribution CDF                
+      \end{itemize}
+    \item Reject $H_0$ if $p < \alpha$
+      \begin{itemize}
+      \item Because p-value is based on asymptotic distribution
+        instead of exact finite sample distribution, the test will not
+        exactly have the correct size
+        \[ \Pr(\text{reject $H_0$ if it is true}) \neq \alpha \]
+        however it will have the correct size for large samples
+        \[ \lim_{n \to \infty} \Pr(\text{reject $H_0$ if it is
+          true}) = \alpha \]
+      \end{itemize}
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[allowframebreaks]\frametitle{Large sample inference}
+  \begin{tabular}{cc}     
+    \multicolumn{2}{c}{{\textbf{$t$ distribution as degrees of freedom
+          increases}}} \\
+    PDF & CDF \\
+    \includegraphics[width=0.48\textwidth]{t-pdf}
+    &  \includegraphics[width=0.48\textwidth]{t-cdf}
+  \end{tabular}
+\end{frame}
+
+\begin{frame}[allowframebreaks]\frametitle{Large sample inference}
+  \begin{itemize}
+  \item E.g.\ 95\% confidence interval for $\beta_j$
+    \begin{itemize}
+    \item We know 
+      \[ \frac{\hat{\beta}_j - \beta_j}
+      {\sqrt{\frac{\hat{\sigma}^2_\epsilon}{\sumin \tilde{x}_{ji}^2}}} 
+      \indist N(0,1) \]
+      so
+      \begin{align*}
+        \Pr \left( \Phi^{-1}(0.025) \leq \frac{\hat{\beta}_j - \beta_j}
+          {\sqrt{\frac{\hat{\sigma}^2_\epsilon}{\sumin \tilde{x}_{ji}^2}}}
+          \leq \Phi^{-1}(0.975) \right) & \to 0.95 \\
+        \Pr \begin{pmatrix} \hat{\beta}_j + \sqrt{\frac{\hat{\sigma}^2_\epsilon}{\sumin
+              \tilde{x}_{ji}^2}} \Phi^{-1}(0.025) \leq \beta_j \leq \\
+          \leq \hat{\beta}_j + \sqrt{\frac{\hat{\sigma}^2_\epsilon}{\sumin
+              \tilde{x}_{ji}^2}} \Phi^{-1}(0.975)
+        \end{pmatrix}
+        & \to 0.95 
+      \end{align*}
+      and we can use the same confidence interval as before
+      \[ \hat{\beta}_j \pm s.e.(\hat{\beta}_j) \Phi^{-1}(0.025) \]
+      \begin{itemize}
+      \item As above, using $F_{t,n-k-1}^{-1}$ instead of $\Phi^{-1}$
+        is valid
+      \item As above, the confidence interval is only guaranteed to
+        have correct coverage probability in large samples
+      \end{itemize}
+    \end{itemize}
+  \item E.g.\ testing $H_0: \beta_2 = 0$ and $\beta_3 = 0$ against
+    $H_a: \beta_2 \neq 0$ or $\beta_3 \neq 0$ in 
+    \[ y_i = \beta_0 + \beta_1 x_{1,i} + \beta_2 x_{2,i} + \beta_3
+    x_{3,i} + \epsilon_i \]
+    \begin{itemize}
+    \item $F$-statistic (LR version):
+      \[ \hat{F} = \frac{(SSR_r - SSR_{ur})/q}{SSR_{ur}/(n-k-1)} \]
+      where
+      \begin{itemize}
+      \item $SSR_r= $ sum of squared residuals from restricted model,
+        i.e.\ regressing $y_i$ on just $x_{1,i}$
+      \item $SSR_{ur} =$ sum of squared residuals from unrestricted
+        model, i.e.\ regressing $y_i$ on $x_{1,i}$, $x_{2,i}$, and
+        $x_{3,i}$
+      \item $q = 2 = $ number of restrictions
+      \end{itemize}
+    \item Asymptotic normality of $\hat{\beta}$ implies
+      \[ q F \indist \chi^2(q) \]
+    \item Asymptotic p-value:
+      \[ p = \Pr(F \geq \hat{F}) = 1 - F_{\chi^2(q)}(q \hat{F}) \]
+      where $F_{\chi^2(q)}$ is CDF of $\chi^2(q)$ distribution
+      \begin{itemize}
+      \item Since $\lim_{n \to \infty} F_{F(q,n-k-1)}(x) =
+        F_{\chi^2(q)}(q x)$, can use $F$ distribution instead of $\chi^2$
+      \end{itemize}
+    \item Same is true for Wald version of $F$-statistic
+      \begin{align*}
+        \hat{F} = & \frac{1}{q} \begin{pmatrix} \hat{\beta}_2 \\ \hat{\beta}_3
+        \end{pmatrix}^T \begin{pmatrix} \widehat{\var}(\hat{\beta}_2)
+          & \widehat{\cov}(\hat{\beta}_2, \hat{\beta}_3) \\
+          \widehat{\cov}(\hat{\beta}_2, \hat{\beta}_3) &
+          \widehat{\var}(\hat{\beta}_3) 
+        \end{pmatrix}^{-1} \begin{pmatrix} \hat{\beta}_2 \\ \hat{\beta}_3
+        \end{pmatrix} \\
+        = & \frac{1}{q} \frac{\hat{\beta}_2^2 \widehat{\var}(\hat{\beta}_3) +
+          \hat{\beta}_3 \widehat{\var}(\hat{\beta}_2) - 2
+          \widehat{\cov}(\hat{\beta}_2,\hat{\beta}_3) \hat{\beta}_2
+          \hat{\beta}_3 } {\widehat{\var}(\hat{\beta}_2)
+          \widehat{\var}(\hat{\beta}_3) -
+          \widehat{\cov}(\hat{\beta}_2,\hat{\beta}_3)^2} 
+      \end{align*}
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[allowframebreaks]\frametitle{Large sample inference}
+  \begin{tabular}{cc}     
+    \multicolumn{2}{c}{{\textbf{$F(2,df)$ distribution as degrees of freedom
+          increases}}} \\
+    PDF & CDF \\
+    \includegraphics[width=0.48\textwidth]{F2-pdf}
+    &  \includegraphics[width=0.48\textwidth]{F2-cdf}
+  \end{tabular}
+\end{frame}
+
+\begin{frame}[allowframebreaks]\frametitle{Large sample inference}
+  \begin{tabular}{cc}     
+    \multicolumn{2}{c}{{\textbf{$F(5,df)$ distribution as degrees of freedom
+          increases}}} \\
+    PDF & CDF \\
+    \includegraphics[width=0.48\textwidth]{F5-pdf}
+    &  \includegraphics[width=0.48\textwidth]{F5-cdf}
+  \end{tabular}
+\end{frame}
+
+\begin{frame}[fragile,allowframebreaks]
+  \frametitle{F-test in R}
+  {\small{
+  \begin{lstlisting}
+rm(list=ls())
+library(lmtest) ## for lrtest() and waldtest()
+
+k <- 3
+n <- 1000
+beta <- matrix(c(1,1,0,0), ncol=1)
+x <- matrix(rnorm(n*k),nrow=n,ncol=k)
+e <- runif(n)*2-1 ## U(-1,1)
+y <- cbind(1,x) %*% beta + e
+
+## LR form of F-test
+df <- data.frame(y,x)
+unrestricted <- lm(y ~ X1 + X2 + X3, data=df)
+restricted <- lm(y ~ X1,data=df)
+F <- (sum(restricted$residuals^2) - 
+      sum(unrestricted$residuals^2))/2 /
+  (sum(unrestricted$residuals^2)/(n-k-1))
+p <- 1-pf(F,2,n-k-1)
+## or use anova
+anova(restricted,unrestricted)
+## or lrtest (uses chi2 instead of F distribution)
+lrtest(unrestricted, restricted)
+
+## Wald form
+Fw <- 0.5*coef(unrestricted)[c("X2","X3")] %*%
+  solve(vcov(unrestricted)[c("X2","X3"),
+                           c("X2","X3")]) %*%
+  coef(unrestricted)[c("X2","X3")]
+pw <- 1-pf(Fw,2,n-k-1)
+## Should have F == Fw and p==pw
+
+## automated Wald test
+waldtest(unrestricted, restricted, test="F")
+  \end{lstlisting}
+    }}
+  \href{https://bitbucket.org/paulschrimpf/econ326/src/master/notes/05/Ftest.R?at=master} 
+  {Code} 
+\end{frame}
+
+
+% \subsection{Asymptotic efficiency}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}[allowframebreaks]
+  \frametitle{References}
+\bibliographystyle{jpe}
+\bibliography{../326}
+\end{frame}
+  
+
+\end{document}

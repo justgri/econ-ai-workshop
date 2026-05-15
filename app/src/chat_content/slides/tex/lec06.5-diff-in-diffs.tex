@@ -1,0 +1,248 @@
+%\input{../slideHeader}
+
+\title{Difference in differences} 
+\author{Paul Schrimpf} 
+\institute{UBC \\ Economics 326} 
+\date{\today}
+
+\graphicspath{{figures/}}
+
+\begin{document}
+
+\frame{\titlepage}
+%\setcounter{tocdepth}{2}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}
+  \tableofcontents  
+\end{frame}
+
+\begin{frame}
+  \frametitle{References}
+  \begin{itemize}
+  \item \cite{ap2014} chapter 5
+  \item \cite{sw2009} chapter 13, especially 13.4
+  \item \cite{w2013} chapter 13, especially 13.2
+  \end{itemize} 
+\end{frame}
+
+\section{Effect of minimum wages}
+
+\begin{frame}[allowframebreaks]\frametitle{Introduction}
+  \begin{itemize}
+  \item Effect of minimum wage on employment theoretically ambiguous
+    \begin{itemize}
+    \item In competitive labor market, increasing binding minimum wage
+      decreases employment
+    \item In monopsonistic labor market, increasing minimum wage, can
+      increase employment
+    \end{itemize}
+    Even if direction not ambiguous, size of effect cannot be
+    determined from theory alone    
+  \end{itemize}
+\end{frame}
+
+\begin{frame}\frametitle{Policy change as a natural experiment}
+  \begin{itemize}
+  \item Ideal experiment: randomly assign labor markets to a control
+    group (minimum wage kept constant) and treatment group (minimum
+    wage increased), compare outcomes
+  \item Policy changes affecting some areas and not others create
+    natural experiments
+    \begin{itemize}
+    \item Unlike ideal experiment, control and treatment groups not
+      randomly assigned
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\subsection{\cite{card1994}}
+
+\begin{frame}\frametitle{\cite{card1994}}
+  \begin{itemize}
+  \item In April 1992:
+    \begin{itemize}
+    \item Minimum wage in New Jersey from \$4.25 to \$5.05
+    \item Minimum wage in Pennsylvania constant at \$4.25
+    \end{itemize}
+  \item \cite{card1994} surveyed 473 fast food restaurants in
+    February/March 1992, and again in November/December 1992 
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[plain]
+  \includegraphics[width=\textwidth, height=\textheight,
+  keepaspectratio=true]{ck-fig21}
+\end{frame} 
+
+\begin{frame}\frametitle{Difference in differences}
+  \begin{center}
+  \begin{tabular}{l|cc}
+    \multicolumn{3}{c}{\textbf{Average employees}} \\
+    & PA      & NJ     \\
+    \hline
+    Before & 23.33   & 20.44  \\
+           & (1.35)  & (0.51)  \\
+    After  & 21.17   & 21.03   \\
+    & (0.94)  & (0.52) \\
+    \hline
+  \end{tabular}\end{center}
+  \pause
+  \begin{itemize}
+  \item Is $\overline{\text{NJ,after}} - \overline{\text{PA,after}} =
+    21.03-21.17 = -0.14$ $(1.07)$ a good estimate of the causal effect
+    of the minimum wage difference on employment?
+    \pause
+  \item Is $\overline{\text{NJ,after}} - \overline{\text{NJ,before}} =
+    21.03-20.44 = 0.59$ $(0.54)$ a good estimate of the causal effect
+    of the minimum wage difference on employment?
+  \end{itemize}  
+\end{frame}
+
+\begin{frame}\frametitle{Difference in differences}
+  \includegraphics[width=\textwidth, height=0.8\textheight,
+  keepaspectratio=true]{ck-tab22}
+
+  \footnotetext{This table and other figure and tables in this section
+    from \cite{card1997}.}
+\end{frame}
+
+\begin{frame}\frametitle{Assessing natural experiment}
+  \begin{itemize}
+  \item NJ and PA minimum wage not randomly assigned
+    \begin{itemize}
+    \item NJ could have chosen higher minimum because e.g. it was
+      growing faster than PA
+    \end{itemize}
+  \item Can check pre-period balance
+    \begin{itemize}
+    \item If treatment and control group were randomly assigned, then
+      there would be no differences between them before the experiment
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[plain]
+  \includegraphics[width=\textwidth, height=\textheight,
+  keepaspectratio=true]{ck-tab21}
+\end{frame}
+
+\begin{frame}[plain]
+  \includegraphics[width=\textwidth, height=\textheight,
+  keepaspectratio=true]{ck-fig22a}
+  
+  \includegraphics[width=\textwidth, height=\textheight,
+  keepaspectratio=true]{ck-fig22foot}
+\end{frame}
+
+\begin{frame}[plain]
+  \includegraphics[width=\textwidth, height=\textheight,
+  keepaspectratio=true]{ck-fig22b}
+  
+  \includegraphics[width=\textwidth, height=\textheight,
+  keepaspectratio=true]{ck-fig22foot}
+\end{frame}  
+
+\begin{frame}\frametitle{Diff-in-diffs regression}
+  \begin{itemize}
+  \item $\Delta y_i = \beta_0 + \beta_1 NJ_i + \epsilon_i$
+    \begin{itemize}
+    \item $\Delta y_i = $ change in employees at restaurant $i$
+    \item $NJ_i = 1$ if in NJ, $0$ if in PA
+    \item $\hat{\beta}_1 = $ difference in differences
+    \end{itemize}
+    \pause
+  \item Can estimate multiple regression to hold restaurant
+    characteristics fixed
+    \[ \Delta y_i = \beta_0 + \beta_1 NJ_i + \text{other controls} +
+      \epsilon_i \]
+  \end{itemize}  
+\end{frame}
+
+\begin{frame}[plain]
+  \includegraphics[width=\textwidth, height=\textheight,
+  keepaspectratio=true]{ck-tab23}
+\end{frame}
+
+\subsection{\cite{abc2009}}
+
+\begin{frame}\frametitle{\cite{abc2009}}
+  \begin{itemize}
+  \item Minimum wage and employment in retail
+  \item US data 1990-2005
+  \item Model
+    \[ \log(E_{ist}) = \beta \log (MW_{st}) + \text{controls}_{ist} + \mu_i
+      + \lambda_i t + \tau_t + \epsilon_{ist} \]
+    county $i$, state $s$, year $t$
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[plain]
+  \includegraphics[width=\textwidth, height=\textheight,
+  keepaspectratio=true]{abc-tab4-top}
+
+  \includegraphics[width=\textwidth, height=\textheight,
+  keepaspectratio=true]{abc-tab4-b}
+\end{frame}
+
+\subsection{\cite{clemens2018}}
+
+\begin{frame}\frametitle{\cite{clemens2018}}
+  ``The short-run employment effects of recent
+  minimum wage changes: evidence from the American
+  Community Survey''
+\end{frame}
+
+\begin{frame}\frametitle{Recent minimum wage changes in US}
+  \begin{itemize}
+  \item July 2009 federal minimum wage to \$7.25
+  \item Great recession
+  \item 2012 - 1 state increases minimum wage
+  \item 2013 - 4 states increases minimum wage
+  \item 2014 - 17 states increases minimum wage
+  \item Average increase \$0.92 (12\%)    
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[plain]
+  \includegraphics[width=\textwidth, height=\textheight,
+  keepaspectratio=true]{cw-tab1}
+\end{frame}
+
+\begin{frame}[plain]
+  \includegraphics[width=\textwidth, height=\textheight,
+  keepaspectratio=true]{cw-fig1}
+\end{frame}
+
+\begin{frame}[plain]
+  \includegraphics[width=\textwidth, height=\textheight,
+  keepaspectratio=true]{cw-fig2}
+\end{frame}
+
+\begin{frame}[plain]
+  \includegraphics[width=\textwidth, height=\textheight,
+  keepaspectratio=true]{cw-fig3}
+\end{frame}
+
+\begin{frame}\frametitle{Model}
+  \[ y_{ist} = \sum_p \beta_p Policy_s \times Post_t + \alpha_{1s} +
+    \alpha_{2t} + X_{ist} \gamma + \epsilon_{ist} \]
+\end{frame}
+
+\begin{frame}[plain]
+  \includegraphics[width=\textwidth, height=\textheight,
+  keepaspectratio=true]{cw-tab4}
+\end{frame}
+ 
+ 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}[allowframebreaks]
+  \frametitle{References}
+\bibliographystyle{jpe}
+\bibliography{../326}
+\end{frame}
+
+
+\end{document}

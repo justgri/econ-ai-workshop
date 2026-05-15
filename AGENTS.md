@@ -28,6 +28,15 @@ Optimize for a smooth live demo, not for production architecture.
 - Prefer native Streamlit widgets and charts before custom HTML, JavaScript, or components.
 - Never open, read, print, diff, parse, edit, or write any `secrets.toml` file. If secrets are needed, ask the user to manage the file directly and only discuss required key names or redacted examples outside of `secrets.toml`.
 
+## Script Organization
+
+- Keep helper scripts under `app/src/scripts/` and split them by purpose instead of putting scripts directly in the root of that folder.
+- Use `app/src/scripts/chat/` for chat prompts, chat API experiments, and conversation utilities.
+- Use `app/src/scripts/db/` for data download, database setup, query, and ingestion utilities.
+- Use `app/src/scripts/plot/` for chart generation, figure export, and plotting experiments.
+- Use `app/src/scripts/mcp/` for MCP server/client experiments and connector utilities.
+- If a new script does not fit those folders, create a small, clearly named subfolder for its topic.
+
 ## Data Handling
 
 - Do not expose, paste, print, screenshot, or manually open proprietary or potentially sensitive data files.

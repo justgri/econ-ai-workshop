@@ -9,6 +9,7 @@ This repository is a compact workshop workspace for a presentation and a live-co
 - `app/app.py` - Streamlit entry point for the live demo.
 - `app/data/` - small local datasets for the demo.
 - `app/src/` - optional helper code if the demo grows.
+- `app/src/scripts/` - helper scripts grouped by topic, such as `chat/`, `db/`, `plot/`, and `mcp/`.
 - `app/pages/` - optional Streamlit pages.
 
 ## Run The Demo App

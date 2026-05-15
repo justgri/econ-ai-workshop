@@ -1,0 +1,652 @@
+%\input{../slideHeader}
+
+\title{Heteroskedasticity \& Dependence} 
+\author{Paul Schrimpf} 
+\institute{UBC \\ Economics 326} 
+\date{\today}
+
+\graphicspath{{figures/}}
+
+\begin{document}
+
+\frame{\titlepage}
+%\setcounter{tocdepth}{2}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}
+  \tableofcontents  
+\end{frame}
+
+\begin{frame}
+  \frametitle{References}
+  \begin{itemize}
+  \item \cite{w2013} chapter 8
+  \item \cite{sw2009} chapter 10.5
+  \item \cite{ap2014} chapter 5
+  \end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+
+\section{Introduction}
+
+\begin{frame}[allowframebreaks]\frametitle{Introduction}
+  \begin{itemize}
+  \item[MLR.5] (homoskedasticity) $\var(\epsilon_i | X) =
+    \sigma^2_\epsilon$ is often an implausible assumption
+    \begin{tabular}{cc} 
+      \alert{Homoskedastic} & \alert{Heteroskedastic} \\ 
+      \includegraphics[width=0.4\textwidth]{../03/homoskedastic} &
+      \includegraphics[width=0.4\textwidth]{../03/heteroskedastic} 
+    \end{tabular}
+    \href{https://bitbucket.org/paulschrimpf/econ326/src/master/notes/03/skedastic.R?at=master}
+    {Code}
+  \item \alert{Heteroskedasticity} is when $\var(\epsilon|X)$ varies
+    with $X$
+  \end{itemize}
+\end{frame}
+\begin{frame}[allowframebreaks]\frametitle{Introduction}
+  \begin{itemize}
+  \item Role of homoskedasticity:
+    \begin{itemize}
+    \item Was \emph{not} needed to show OLS unbiased and consistent
+    \item Was needed to calculate $\var(\hat{\beta}|X)$      
+    \end{itemize}
+  \item If errors are heteroskedastic then still have
+    $\Er[\hat{\beta}_j] = \beta_j$ and $\hat{\beta}_j \inprob \beta_j$
+    (assuming MLR.1-4), but usual standard error is invalid 
+  \item If there is heteroskedasticity, the variance of
+    $\hat{\beta}_1$ is different, but we can fix it 
+  \item ``heteroskedasticity robust standard errors'' /
+    ``heteroscedasticity consistent
+    standard errors'' / ``Eicker–Huber–White standard errors''
+  \end{itemize}
+\end{frame}
+
+\begin{frame}\frametitle{Example: Engel curves}
+  \begin{itemize}
+  \item An \alert{Engel curve} describes how a consumer's purchases of
+    a good (like food) varies with the consumer's total resources
+    (income or total spending)
+  \item Named after \cite{engel1857} --- looked at food expenditures
+    and income of Belgian families
+    \begin{itemize}
+    \item See \cite{chai2010} for a description of Engel's work and
+      \cite{lewbel2008} for a brief summary of modern research on
+      Engel curves
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}\frametitle{Example: Engel (1857) curve}
+  \[ foodexp = \beta_0 + \beta_1 income + \beta_2 income^2 +
+  \epsilon \]
+  \begin{tabular}{cc}
+    {\bfseries{Engel curve}} & {\bfseries{Residuals}} \\
+    \includegraphics[width=0.45\textwidth,keepaspectratio=true]{engel1857}
+    &
+    \includegraphics[width=0.45\textwidth,keepaspectratio=true]{engel1857-residuals}
+  \end{tabular}
+  \begin{itemize}
+  \item Income and food expenditure measured in Belgian Francs
+  \end{itemize}
+\end{frame}
+
+\begin{frame}\frametitle{Example: Engel (1857) curve in shares}
+  \[ \frac{foodexp}{income} = foodshare = \beta_0 + \beta_1 income + \beta_2 income^2 +
+  \epsilon \]  
+  \begin{tabular}{cc}
+    {\bfseries{Engel curve}} & {\bfseries{Residuals}} \\
+    \includegraphics[width=0.45\textwidth,keepaspectratio=true]{engel1857-share}
+    &
+    \includegraphics[width=0.45\textwidth,keepaspectratio=true]{engel1857-share-residuals}
+  \end{tabular}
+  \href{https://bitbucket.org/paulschrimpf/econ326/src/master/notes/06/engel.R?at=master} 
+  {Code} 
+\end{frame}
+
+\begin{frame} \frametitle{Engel curves with modern data}
+  \begin{itemize}
+  \item There are still papers about estimating Engel curves 
+    \begin{itemize}
+    \item \cite{banks1997}, \cite{blundell1998}, \cite{blundell2003}
+    \end{itemize}
+  \item Next slides uses data from British Family Expenditure Surveys
+    (FES) for 1980-1982  (same data as \cite{blundell1998})
+  \end{itemize}
+\end{frame}
+
+\begin{frame} \frametitle{Engel curves with modern data: food}
+  \begin{tabular}{cc}
+    {\bfseries{Engel curve}} & {\bfseries{Residuals}} \\
+    \includegraphics[width=0.45\textwidth,keepaspectratio=true]{fes-food}
+    &
+    \includegraphics[width=0.45\textwidth,keepaspectratio=true]{fes-food-residuals}
+  \end{tabular}
+  \href{https://bitbucket.org/paulschrimpf/econ326/src/master/notes/06/fes.R?at=master} 
+  {Code}   
+\end{frame}
+
+\begin{frame} \frametitle{Engel curves with modern data: alcohol}
+  \begin{tabular}{cc}
+    {\bfseries{Engel curve}} & {\bfseries{Residuals}} \\
+    \includegraphics[width=0.45\textwidth,keepaspectratio=true]{fes-alcohol}
+    &
+    \includegraphics[width=0.45\textwidth,keepaspectratio=true]{fes-alcohol-residuals}
+  \end{tabular}
+  \href{https://bitbucket.org/paulschrimpf/econ326/src/master/notes/06/fes.R?at=master} 
+  {Code}   
+\end{frame}
+
+\begin{frame} \frametitle{Engel curves with modern data: clothing}
+  \begin{tabular}{cc}
+    {\bfseries{Engel curve}} & {\bfseries{Residuals}} \\
+    \includegraphics[width=0.45\textwidth,keepaspectratio=true]{fes-clothing}
+    & 
+    \includegraphics[width=0.45\textwidth,keepaspectratio=true]{fes-clothing-residuals}
+  \end{tabular}
+  \href{https://bitbucket.org/paulschrimpf/econ326/src/master/notes/06/fes.R?at=master} 
+  {Code}   
+\end{frame}
+
+\section{Consequences of heteroskedasticity} 
+
+\begin{frame} \frametitle{Consequences of heteroskedasticity}
+  \begin{itemize}
+  \item OLS still unbiased and consistent assuming 
+    \begin{enumerate}
+    \item[MLR.1] (linear model) 
+    \item[MLR.2] (independence) $\{(x_{1,i},x_{2,i},y_i)\}_{i=1}^n$ is
+      an independent random sample
+    \item[MLR.3] (rank condition) no multicollinearity: no $x_{j,i}$ is
+      constant and there is no exact linear relationship among the $x_{j,i}$
+    \item[MLR.4] (exogeneity) $\Er[\epsilon_i | x_{1,i},..., x_{k,i}] = 0$      
+    \end{enumerate}
+  \item Homoskedastic-only standard errors are incorrect, 
+    \[ \var(\hat{\beta}_j|X) \neq \frac{\sumin \sigma_\epsilon^2 } {\sumin
+      \tilde{x}_{j,i}^2} \text{ and } \plim \frac{\sumin \hat{\epsilon}_i^2 }{\sumin
+      \tilde{x}_{j,i}^2} \neq \var(\hat{\beta}_j) \]
+  \item $t$ (and $F$) statistics formed using homoskedasticity-only
+    standard errors do not have $t$ (or $F$) distributions (not even
+    asymptotically)
+  \item Hypothesis tests and confidence intervals formed  using
+    homoskedasticity-only standard errors are invalid
+  \item OLS is not BLUE
+  \end{itemize}
+\end{frame}
+
+\section{$\var(\hat{\beta})$ with heteroskedasticity}
+
+\begin{frame}[allowframebreaks]\frametitle{$\var(\hat{\beta})$ with heteroskedasticity}
+  \begin{itemize}
+  \item \alert{Central limit theorem}: for i.i.d.\ data, if
+    $\Er[y_i] = \mu$ and $\var(y_i) = \sigma^2$ for all $i$ then 
+    \[ \sqrt{n}\left(\bar{y}_n - \mu \right) \indist N(0,\sigma^2) \]
+  \item Recall how to how to show $\hat{\beta}$ is asymptotically
+    normal in bivariate regression 
+    \begin{align*}
+      \sqrt{n}(\hat{\beta}_1 - \beta_1) = & \sqrt{n} \left( \frac{\avg (x_i - \bar{x}) y_i }
+        {\avg (x_i  - \bar{x})^2} - \beta_1 \right) \\
+      = & \sqrt{n}\left(  \frac{\avg (x_i - \bar{x}) (\beta_0 +
+          \beta_1 x_i + \epsilon_i) }
+        {\avg (x_i  - \bar{x})^2} - \beta_1 \right) \\
+      = & \frac{\sqrt{n} \avg (x_i - \bar{x}) \epsilon_i} {\avg (x_i -
+        \bar{x})^2} 
+    \end{align*}
+    \begin{itemize}
+    \item Already showed that $\avg (x_i - \bar{x})^2 \inprob \var(x)$
+    \item Need to apply CLT to $\sqrt{n} \avg (x_i-\bar{x}) \epsilon_i$. First note that
+      {\footnotesize{
+      \begin{align*}
+        \sqrt{n} \avg (x_i-\bar{x})\epsilon_i = & \sqrt{n}\avg (x_i - \Er[x])\epsilon_i +
+                                                  \underbrace{(\Er[x]
+                                                  -
+                                                  \bar{x})}_{\inprob
+                                                  0}
+                                                  \underbrace{\sqrt{n}
+                                                  \avg
+                                                  \epsilon_i}_{\indist
+        N(0,\var(\epsilon))} \\
+      \end{align*}        
+      }}
+    \item Let $w_i = (x_i -\Er[x])\epsilon_i$, can apply CLT to $w_i$
+      because
+      \begin{itemize}
+      \item $\Er[w_i] = \Er[ x_i \epsilon_i ] = 0$
+      \item Observations are independent
+      \item Assume $\var(w_i) = \Er[(x_i-\Er[x])^2 \epsilon_i^2]$
+        exists
+      \end{itemize}
+      then $\frac{1}{\sqrt{n}} \sumin (x_i-\Er[x]) \epsilon_i
+      \indist N\left(0, \Er\left[(x_i-\Er[x])^2 \epsilon_i^2\right] \right)$
+    \item Can conclude that
+      \[ \frac{1}{\sqrt{n}} \sumin (x_i-\bar{x})\epsilon_i \indist
+      N\left(0, \Er\left[(x_i-\Er[x])^2 \epsilon_i^2\right]  \right) \]
+    \end{itemize}
+  \item By Slutsky's theorem,
+    \begin{align*}
+      \sqrt{n}(\hat{\beta}_1 - \beta_1) = & \frac{\sqrt{n} \avg (x_i-\bar{x}) \epsilon_i} {\avg (x_i -
+        \bar{x})^2} \\
+      \indist & N\left(0, \frac{\Er\left[ (x_i-\Er[x])^2
+            \epsilon_i^2 \right]}{\var(x)^2} \right)
+    \end{align*}
+    or equivalently,
+    \[ \frac{\hat{\beta}_1 - \beta_1} {
+      \sqrt{\frac{\Er\left[ (x_i-\Er[x])^2
+            \epsilon_i^2 \right]}{n \var(x)^2} } } \indist N(0,1) \]    
+  \item By Slutsky's theorem can replace $\sqrt{\frac{\Er\left[
+          (x_i - \Er[x])^2 \epsilon_i^2 \right]}{\var(x)^2} }$ by
+    consistent estimators, and
+    \begin{align*}
+      \frac{\hat{\beta}_1 - \beta_1}
+      { \sqrt{\frac{\avg (x_i-\bar{x})^2 \hat{\epsilon}_i^2 }
+      {n \left(\avg (x_i - \bar{x})^2\right)^2 }}} \indist N(0,1) 
+    \end{align*}
+  \item Similar reasoning applies to multivariate regression
+    \begin{align*}
+      \frac{\hat{\beta}_j - \beta_j}
+      { \sqrt{\frac{\avg \tilde{x}_{j,i}^2
+            \hat{\epsilon}_i^2}{n \left(\avg \tilde{x}_{j,i}^2\right)^2
+          }}} \indist N(0,1)  
+    \end{align*}    
+  \item $\sqrt{\frac{\avg \tilde{x}_{j,i}^2
+        \hat{\epsilon}_i^2}{n \left(\avg
+          \tilde{x}_{j,i}^2\right)^2}}$ is called the
+    heteroskedasticity robust standard error or the
+    Eicker-Huber-White standard error 
+    \begin{itemize}
+    \item Statistics: \cite{eicker1967}, \cite{huber1967}
+    \item Econometrics: \cite{white1980}
+    \end{itemize}    
+  \end{itemize}
+\end{frame}
+
+
+%\begin{frame}\frametitle{Demonstration}
+%  \includegraphics[height=0.8\textheight]{cltPlot-ols-hetsked} \\
+%    \href{https://bitbucket.org/paulschrimpf/econ326/src/master/notes/05/clt-ols-hetsked.R?at=master} 
+%    {Code} 
+%\end{frame}
+
+\subsection{Calculating in R}
+
+\begin{frame}[fragile] \frametitle{R: Heteroskedasticity robust standard
+    errors}
+  {\tiny{
+  \begin{lstlisting}
+## calculating Heteroskedasticity robust standard errors
+engelCurve <- lm(foodexp ~ income, data=engel)
+## calculate by hand
+hetSE <- sqrt(mean( (engel$income - mean(engel$income))^2 *
+                   residuals(engelCurve)^2) /
+              (nrow(engel)*mean( (engel$income - mean(engel$income))^2 )^2 )) 
+
+## use "sandwich" package
+library(sandwich)
+sqrt(vcovHC(engelCurve, type="HC0")[2,2])
+
+## test H_0: each coefficient = 0 separately
+library(lmtest)
+coeftest(engelCurve, vcov=vcovHC(engelCurve,type="HC0"))
+## compare with homoskedastic standard errors
+coeftest(engelCurve)
+
+## we would do F-tests with
+## waldtest(engelCurve, vcov=vcovHC(engelCurve,type="HC0")) or
+## lrtest(engelCurve, vcov=vcovHC(engelCurve,type="HC0"))
+
+## Or even easier, just use lfe packaage
+library(lfe)
+engelCurve2 <- felm(foodexp ~ income, data=engel)
+summary(engelCurve2, robust=TRUE)
+  \end{lstlisting}
+    }}
+  \href{https://bitbucket.org/paulschrimpf/econ326/src/master/notes/06/engel.R?at=master} 
+  {Code} 
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Examples}
+
+\begin{frame}\frametitle{Growth, GDP, and education}
+\begin{center}
+\begin{tabular}{l D{.}{.}{3.5} @{}D{.}{.}{3.5} @{}D{.}{.}{3.5} @{}}
+\toprule
+            & \multicolumn{1}{c}{GDP 1960} & \multicolumn{1}{c}{Education 1960} & \multicolumn{1}{c}{Both} \\
+\midrule
+(Intercept) & 1.796^{***} & 0.958^{**}  & 0.895^{**}   \\
+            & (0.378)     & (0.418)     & (0.389)      \\
+            & [0.456]     & [0.454]     & [0.428]      \\
+rgdp60      & 0.047       &             & -0.485^{***} \\
+            & (0.095)     &             & (0.146)      \\
+            & [0.083]     &             & [0.149]      \\
+yearsschool &             & 0.247^{***} & 0.640^{***}  \\
+            &             & (0.089)     & (0.144)      \\
+            &             & [0.084]     & [0.154]      \\
+\midrule
+Num. obs.   & 65          & 65          & 65           \\
+\bottomrule
+\vspace{-2mm}\\
+\multicolumn{4}{l}{\textsuperscript{***}$p<0.01$, 
+  \textsuperscript{**}$p<0.05$, 
+  \textsuperscript{*}$p<0.1$} \\
+\multicolumn{4}{l}{Homoskedastic standard errors in parentheses} \\
+\multicolumn{4}{l}{Heteroskedastic standard errors in brackets}
+\end{tabular}
+\end{center}
+\footnotetext{
+    \href{https://bitbucket.org/paulschrimpf/econ326/src/master/notes/06/growth-het.R?at=master}
+    {Code}}
+\end{frame}
+
+\begin{frame}\frametitle{Test scores and student teacher ratios}
+\begin{center}
+\begin{tabular}{l D{.}{.}{3.5} @{}D{.}{.}{3.5} @{}D{.}{.}{3.5} @{}}
+\toprule
+                          & \multicolumn{1}{c}{1} & \multicolumn{1}{c}{2} & \multicolumn{1}{c}{3} \\
+\midrule
+$\beta_0$                 & 698.93^{***} & 638.73^{***} & 640.32^{***} \\
+                          & (9.47)       & (7.45)       & (5.77)
+                          \\                          
+                          & [10.46]       & [7.37]       & [6.06]       \\
+$\frac{student}{teacher}$ & -2.28^{***}  & -0.65^{*}    & -0.07        \\
+                          & (0.48)       & (0.35)       & (0.28)
+                          \\
+                          & [0.52]       & [0.36]      & [0.29]       \\
+Income                    &              & 1.84^{***}   & 1.49^{***}   \\
+                          &              & (0.09)       & (0.07)
+                          \\
+                          &              & [0.12]       & [0.10]       \\
+English learners          &              &              & -0.49^{***}  \\
+                          &              &              & (0.03) \\
+                          &              &              & [0.03]       \\
+\midrule
+Num. obs.                 & 420          & 420          & 420          \\
+\bottomrule
+\vspace{-2mm}\\
+\multicolumn{4}{l}{\textsuperscript{***}$p<0.01$, 
+  \textsuperscript{**}$p<0.05$, 
+  \textsuperscript{*}$p<0.1$} \\
+\multicolumn{4}{l}{Homoskedastic standard errors in parentheses} \\
+\multicolumn{4}{l}{Heteroskedastic standard errors in brackets}
+\end{tabular}
+\end{center}
+\footnotetext{
+    \href{https://bitbucket.org/paulschrimpf/econ326/src/master/notes/06/caSchool-het.R?at=master}
+    {Code}}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Detecting heteroskedasticity}
+
+\begin{frame}[shrink]\frametitle{Detecting heteroskedasticity} 
+  \begin{itemize}
+  \item Generally best to assume heteroskedasticity and use
+    heteroskedasticity consistent standard errors
+  \item If you have homoskedasticity, but use heteroskedastic standard
+    errors, the heteroskedaticity consistent standard error converges
+    to the homoskedicity-only standard error,
+    so in large samples it will make no difference
+  \item But if you assume homoskedastic when there is
+    heteroskedasticity, your standard errors will be inconsistent, and
+    your hypothesis tests and confidence intervals will be invalid
+  \item Nonetheless occasionally might want to check for
+    heteroskedasticity
+    \begin{itemize}
+    \item Visually: plot $\hat{\epsilon}_i$ against $x_{j,i}$ and/or
+      $\hat{y}_i$
+    \item Formally: can test $H_0:$ homoskedasticity, see \cite{w2013}
+      chapter 8 for details 
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}\frametitle{Example: Test scores and student teacher
+    ratios}
+  \begin{center}
+    \begin{tabular}{cc} 
+      \includegraphics[width=0.4\textwidth]{cas-str} & 
+      \includegraphics[width=0.4\textwidth]{cas-inc} \\
+      \includegraphics[width=0.4\textwidth]{cas-el} & 
+      \includegraphics[width=0.4\textwidth]{cas-yhat} 
+    \end{tabular}
+  \end{center}
+  \footnotetext{
+    \href{https://bitbucket.org/paulschrimpf/econ326/src/master/notes/06/caSchool-het.R?at=master}
+    {Code}}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Heteroskedasticity and efficiency}
+
+\begin{frame}[allowframebreaks]\frametitle{Heteroskedasticity and
+    efficiency}
+  \begin{itemize}
+  \item The Gauss-Markov theorem requires homoskedasticity
+  \item When there is heteroskedasticity, OLS is \emph{not} the best
+    linear unbiased estimator
+  \item What is the best linear unbiased estimator with
+    heteroskedasticity?
+  \item Model: $y_i = \beta_0 + \beta_1 x_i + \epsilon_i $
+  \item Assume MLR.1-4
+  \item Suppose we know $\var(\epsilon_{i} | x_i ) = \sigma^2 h(x_i)$ for
+    some known function $h$
+  \item Consider dividing each observation by $\sqrt{h(x_i)}$
+    \begin{align}
+      \frac{y_i}{\sqrt{h(x_i)}} = & \beta_0\frac{1}{\sqrt{h(x_i)}} +
+      \beta_1 \frac{x_i}{\sqrt{h(x_i)}} +
+      \frac{\epsilon_i}{\sqrt{h(x_i)}} \notag \\
+      y_i^* = & \beta_0 x_{0,i}^* + \beta_1 x_{1,i}^* + \epsilon_i^*  \label{wls}
+    \end{align}
+  \item Then 
+    \begin{itemize}
+    \item Assumptions MLR.1 (linear model), MLR.2 (independent
+      observations), MLR.3 (rank condition), and MLR.4
+      $\Er[\epsilon_i^* | x_i^*] = 0$ hold for (\ref{wls})
+    \item (\ref{wls}) is homoskedastic
+      \begin{align*}
+        \var(\epsilon_i^* | x_i^*) = & \var\left(\left.
+            \frac{\epsilon_i}{\sqrt{h(x_i)}} \right| x_i \right) \\
+        = & \frac{1}{h(x_i) } h(x_i) \sigma^2 = \sigma^2
+      \end{align*}
+    \end{itemize}
+  \item So OLS of (\ref{wls}) is BLUE
+  \item This is called \alert{weighted least squares} (WLS) 
+  \item If do not know $h(x_i)$ but can estimate it this is called
+    \alert{feasible generalized least squares} (FGLS) 
+  \item In most empirical work do not know $h(x_i)$ and often cannot
+    estimate it well, so usually just use OLS
+  \end{itemize}  
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Standard errors for dependent data}
+
+\begin{frame}[allowframebreaks]
+  \frametitle{Standard errors for dependent data}
+  \begin{itemize}
+  \item Assume:
+    \begin{enumerate}
+    \item[MLR.1] (linear model) 
+    \item[MLR.2] \textbf{(not too dependent) $\{(x_{j,i},,y_i)\}_{i=1}^n$ is
+      not too dependent}
+    \item[MLR.3] (rank condition) no multicollinearity: no $x_{j,i}$ is
+      constant and there is no exact linear relationship among the $x_{j,i}$
+    \item[MLR.4] (strict exogeneity) $\Er[\epsilon_i | \{x_{1,j},..., x_{k,j}\}_{j=1}^n] = 0$      
+    \end{enumerate}
+  \item As with heteroskedasticity, when observations are not
+    independent (and not too dependent):
+    \begin{itemize}
+    \item OLS remains unbiased and consistent
+    \item Usual homoskedastic-only or heteroskedasticity robust
+      standard errors are incorrect
+    \item If you do not correct standard errors, hypothesis tests and
+      confidence intervals are invalid
+    \item OLS is not BLUE
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+The assumption that observations are not too dependent is deliberately
+vague. Exactly what ``not too dependent'' means varies with the form
+the dependence (see next slide). To see why such an assumption is
+needed, suppose we just observe a single variable $y_i$ and want to
+estimate $\Er[Y]$. Imagine an extreme form of dependence, $y_1$ is
+randomly drawn from some distribution, but then all other $y_i$ are
+set equal to $y_1$,
+\[ y_1 = y_2 = \cdots = y_n. \]
+Then $\bar{y}$ is an unbiased estimate of $\Er[Y]$, but it is not
+consistent because $\bar{y} = y_1$ will not become close to $\Er[Y]$
+as the sample size increases. This situation is typical. Too much
+dependence is not often a problem for unbiasedness, but you lose
+consistency (and asymptotic normality) with too much dependence. 
+
+To see that some dependence should be okay, consider a situation where
+for $i$ odd, $y_i$ is i.i.d from some distribution, and for $i$ even,
+$y_i = y_{i-1}$. In this case, the sample mean of all observations is
+exactly equal to the sample mean of just the odd observations,
+\[ \bar{y} = \avg y_i = \frac{1}{n/2} \sum_{j=0}^{n/2} y_{2j+1} \equiv
+\bar{y}^{odd}. \]
+Since the odd observations are independent, $\bar{y}^{odd}$ is
+consistent and asymptotically normal. Then, since $\bar{y} =
+\bar{y}^{odd}$, it is also consistent and asymptotically
+normal. However, the variance of $\bar{y}$ is larger than in the
+independent case. In particular, 
+\[ \var(\bar{y}) = \var(\bar{y}^{odd}) = \frac{\var(Y)}{n/2}. \]
+This result is also typical. When observations are not too dependent
+(which will mean observations that are far apart are approximately
+independent), then estimators are consistent and asymptotically
+normal, but with a different (and usually larger) variance. 
+
+\begin{frame}[allowframebreaks]
+  \frametitle{Standard errors for dependent data}
+  \begin{itemize}
+  \item To correct standard errors for dependent data, we need to know
+    something about the form of dependence
+  \item Common forms of dependence:
+    \begin{itemize}
+    \item \alert{Clustering}: observations can be organized into clusters
+      (groups); pairs of observations in the same cluster are
+      dependent, pairs of observations in different clusters are
+      independent 
+    \item \alert{Autocorrelation} (or serial correlation):
+      observations are taken over time; $y_t$ is correlated with
+      $y_{t-k}$
+    \end{itemize} 
+  \item Can correct standard errors for clustering and autocorrelation 
+  \item Clustered standard errors and autocorrelation consistent
+    standard errors are often much larger than standard errors that
+    assume independence 
+  \end{itemize}  
+\end{frame}
+
+\subsection{Clustering}
+
+\begin{frame}[allowframebreaks] 
+  \frametitle{Clustering}
+  \begin{itemize}
+  \item \alert{Clustering}: observations can be organized into clusters
+    (groups); pairs of observations in the same cluster are
+    dependent, pairs of observations in different clusters are
+    independent 
+  \end{itemize}
+\end{frame}
+\begin{frame}[allowframebreaks]
+  \frametitle{Clustering - examples}
+  \begin{itemize}
+  \item \cite{blimpo2014} (from 2015 midterm)
+    \begin{itemize}
+    \item Observations of students test scores, about 1500 students
+      from 100 schools
+    \item Students' test scores in the same school unlikely to be independent, but
+      reasonable to think students in different schools are
+      independent
+    \end{itemize}
+  \item \cite{rodrik2013} (from the 2013 midterm) 
+    \begin{align*}
+      \Delta v_{ij} = \beta_u \log v_{ij} + \delta_0 + \delta_1
+      \mathrm{Industry}_{1,ij} + \cdots + \\ + \cdots + \delta_{J-1}
+      \mathrm{Industry}_{J-1,ij} + \epsilon_{ij} 
+    \end{align*}
+    \begin{itemize}
+    \item Data on 20 industries from 118 countries
+    \item $\log v_{ij} = $ log
+      labor productivity in manufacturing industry $i$ in country $j$
+      ten years in the past 
+    \item$\Delta v_{ij}$ be the annual growth rate of
+      labor productivity in industry $i$ in country $j$ over the past
+      ten years  
+    \item Unrealistic to assume to assume that industries within the
+      same country are independent, so $\Er[\epsilon_{ij}
+      \epsilon_{ik}] \neq 0$
+    \item More reasonable to assume that observations in different
+      countries are independent
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[allowframebreaks]\frametitle{Clustering}
+  \[ y_{ij} = \beta_0 + \beta_1 x_{ij} + \epsilon_{ij} \]
+  \begin{itemize}
+  \item $J$ clusters, $n(j)$ observations in each cluster
+  \item Assume observations in different clusters are independent
+    (observations in the same cluster can be arbitrarily dependent)
+  \item Then 
+    \[ 
+      \frac{\hat{\beta}_1 - \beta_1 }
+      {\sqrt{\frac{\sum_{j=1}^J \left(\sum_{i=1}^{n(j)} (x_{ij} - \bar{x})
+              \hat{\epsilon}_{ij} \right)^2} { \frac{1}{n} \left(\sum_{i,j} (x_{ij} -
+              \bar{x})^2 \right)^2 }}} \indist N(0,1) \]
+    as $J \to \infty$
+  \item Can use these standard errors and perform $t$ and $F$ tests
+    as usual
+  \item These standard errors allow heteroskedasticity and clustering
+  \item This is an asymptotic result for a large number of clusters,
+    many empirical applications have relatively few clusters, there
+    is no consesus on the best thing to do when you have few
+    clusters, but there are number of papers about it, see
+    \cite{ap2009} chapter 8
+  \item For clustered standard errors in R use the \lstinline!felm!
+    from the \lstinline!lfe! package
+  \end{itemize}
+\end{frame}
+
+\subsection{Autocorrelation}
+
+\begin{frame}\frametitle{Autocorrelation}
+  \begin{itemize}
+  \item Observations over time
+    \[ y_t = \beta_0 + \beta_1 x_t + \epsilon_t \]
+  \item Unlikely that $\epsilon_t$ independent of $\epsilon_{t-k}$
+  \item Need to correct standard error of $\hat{\beta}$ 
+  \item Correct formula called \alert{Newey-West} or
+    \alert{autocorrelation consistent} or \alert{HAC}
+    (heteroskedasticity and autocorrelation consistent) standard
+    errors
+    \[ \widehat{se}(\hat{\beta}_1) =
+    \frac{\sum_{\ell=-(T^{1/3})}^{T^{1/3}} \left[ (1 -
+        \abs{\frac{\ell}{T^{1/3}}}) \frac{1}{T} \sum_{t=1}^T (x_t -
+        \bar{x}) \hat{\epsilon_t}(x_{t+\ell} -
+        \bar{x})\hat{\epsilon}_{t+\ell} \right] }
+      { \left(\sum_{t=1}^T (x_t - \bar{x})^2\right)^2} \]
+  \item See \citet{w2013} section 12.5 for details, or
+    \citet{mikusheva2007} lectures 2 \& 3, \& recitation 2 for more
+    discussion
+  \end{itemize}
+\end{frame}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{frame}[allowframebreaks]
+  \frametitle{References}
+\bibliographystyle{jpe}
+\bibliography{../326}
+\end{frame}
+  
+
+\end{document}
